@@ -21,6 +21,27 @@ pnpm dev
 
 The app starts on `http://localhost:3000` by default.
 
+## Docker
+
+For local development with live reload and a local Postgres container:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+The dev compose file maps Postgres to `localhost:5432` and runs `pnpm db:push`
+before starting Next.js.
+
+For a production-style container run:
+
+```bash
+cp .env.production.example .env.production
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+Before deploying the production compose file, set production values for
+`NEXTAUTH_URL`, `NEXTAUTH_SECRET`, and `POSTGRES_PASSWORD`.
+
 ## Environment
 
 Set the required provider, auth, upload, and database variables in `.env`.

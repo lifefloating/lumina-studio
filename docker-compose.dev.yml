@@ -1,0 +1,51 @@
+name: lumina-studio-dev
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lumina}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lumina_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-lumina_studio}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER:-lumina} -d $${POSTGRES_DB:-lumina_studio}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      target: dev
+    env_file:
+      - .env
+    environment:
+      CI: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lumina}:${POSTGRES_PASSWORD:-lumina_dev_password}@db:5432/${POSTGRES_DB:-lumina_studio}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      WATCHPACK_POLLING: "true"
+    command: sh -c "pnpm install --frozen-lockfile && pnpm db:push && pnpm dev --hostname 0.0.0.0"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - node-modules:/app/node_modules
+      - next-cache:/app/.next
+      - pnpm-store:/pnpm/store
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres-dev-data:
+  node-modules:
+  next-cache:
+  pnpm-store:

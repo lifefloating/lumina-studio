@@ -1,0 +1,47 @@
+name: lumina-studio-prod
+
+services:
+  db:
+    image: postgres:17-alpine
+    env_file:
+      - .env.production
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER:-lumina} -d $${POSTGRES_DB:-lumina_studio}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      target: runner
+    env_file:
+      - .env.production
+    command: pnpm db:push
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+    env_file:
+      - .env.production
+    ports:
+      - "3000:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  postgres-prod-data:
