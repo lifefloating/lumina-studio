@@ -78,7 +78,7 @@ async function fetchLocalModels(): Promise<ModelInfo[]> {
     });
 
     if (models.length === 0) {
-      localModelLogger.warn("No live local models detected");
+      localModelLogger.info("No live local models detected");
     }
 
     return models;

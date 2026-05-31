@@ -11,6 +11,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { DRAG_ITEM_BLOCK } from "@platejs/dnd";
 import { GripVertical } from "lucide-react";
 import { useDrag } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export function MediaEmbedPanel() {
@@ -26,6 +27,7 @@ export function MediaEmbedPanel() {
 }
 
 function MediaEmbedCard({ item }: { item: MediaEmbedItem }) {
+  const { t } = useTranslation();
   const currentSlideId = usePresentationState((s) => s.currentSlideId);
   const slides = usePresentationState((s) => s.slides);
   const setSlides = usePresentationState((s) => s.setSlides);
@@ -68,9 +70,15 @@ function MediaEmbedCard({ item }: { item: MediaEmbedItem }) {
         ),
       );
       void saveImmediately();
-      toast.success(`Changed to ${item.label} embed`);
+      toast.success(
+        t("presentationEditor.mediaEmbeds.changedTo", {
+          label: t(`presentationEditor.mediaEmbeds.${item.key}.label`, {
+            defaultValue: item.label,
+          }),
+        }),
+      );
     } else {
-      toast.error("Please select a root image first");
+      toast.error(t("presentationEditor.mediaEmbeds.selectRootImageFirst"));
     }
   };
 
@@ -99,9 +107,15 @@ function MediaEmbedCard({ item }: { item: MediaEmbedItem }) {
         {item.icon}
       </div>
       <div className="text-center">
-        <div className="text-sm font-bold text-foreground">{item.label}</div>
+        <div className="text-sm font-bold text-foreground">
+          {t(`presentationEditor.mediaEmbeds.${item.key}.label`, {
+            defaultValue: item.label,
+          })}
+        </div>
         <div className="mt-1 text-xs text-muted-foreground">
-          {item.description}
+          {t(`presentationEditor.mediaEmbeds.${item.key}.description`, {
+            defaultValue: item.description,
+          })}
         </div>
       </div>
     </div>

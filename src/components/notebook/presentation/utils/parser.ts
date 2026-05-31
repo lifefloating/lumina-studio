@@ -181,12 +181,72 @@ interface XMLTextNode {
   text: string;
 }
 
+const SELF_CLOSING_TAGS = new Set(["BR", "HR", "IMG", "ICON"]);
+const TOP_LEVEL_TAG_ALIASES: Record<string, string> = {
+  ARROW_VERTICAL: "ARROW-VERTICAL",
+  BEFOREAFTER: "BEFORE-AFTER",
+  PROSCONS: "PROS-CONS",
+  VERTICAL_ARROWS: "VERTICAL-ARROWS",
+};
+const KNOWN_TOP_LEVEL_TAGS = new Set([
+  "H1",
+  "H2",
+  "H3",
+  "H4",
+  "H5",
+  "H6",
+  "P",
+  "IMG",
+  "COLUMNS",
+  "BULLETS",
+  "ICONS",
+  "CYCLE",
+  "STAIRCASE",
+  "CHART",
+  "ARROWS",
+  "BOXES",
+  "COMPARE",
+  "BEFORE-AFTER",
+  "BEFOREAFTER",
+  "PROS-CONS",
+  "PROSCONS",
+  "ARROW-VERTICAL",
+  "ARROW_VERTICAL",
+  "VERTICAL-ARROWS",
+  "VERTICAL_ARROWS",
+  "TABLE",
+  "BUTTON",
+  "PYRAMID",
+  "TIMELINE",
+  "STATS",
+  "QUOTE",
+]);
+
 function isTextNode(node: XMLNode | XMLTextNode): node is XMLTextNode {
   return "text" in node && !("tag" in node);
 }
 
 function isElementNode(node: XMLNode | XMLTextNode): node is XMLNode {
   return "tag" in node;
+}
+
+function normalizeTagName(tagName: string): string {
+  const rawTag = tagName
+    .trim()
+    .replace(/\/+$/, "")
+    .split(/\s+/)[0]
+    ?.toUpperCase();
+
+  if (!rawTag) {
+    return "";
+  }
+
+  const beforeClosingSection = rawTag.split("</SECTION")[0] ?? rawTag;
+  const beforePresentation = beforeClosingSection.split("</PRESENTATION")[0] ??
+    beforeClosingSection;
+  const normalized = beforePresentation.replace(/[^A-Z0-9_-]/g, "");
+
+  return TOP_LEVEL_TAG_ALIASES[normalized] ?? normalized;
 }
 
 /**
@@ -205,20 +265,21 @@ export class SlideParser {
    * Parse a chunk of XML data
    */
   public parseChunk(chunk: string): PlateSlide[] {
-    this.latestContent = chunk;
+    const cleanChunk = this.sanitizeInput(chunk);
+    this.latestContent = cleanChunk;
 
     const isFullContent =
-      chunk.length >= this.lastInputLength &&
-      chunk.substring(0, this.lastInputLength) ===
+      cleanChunk.length >= this.lastInputLength &&
+      cleanChunk.substring(0, this.lastInputLength) ===
         this.buffer.substring(0, this.lastInputLength);
 
     if (isFullContent && this.lastInputLength > 0) {
-      this.buffer = this.buffer + chunk.substring(this.lastInputLength);
+      this.buffer = this.buffer + cleanChunk.substring(this.lastInputLength);
     } else {
-      this.buffer = chunk;
+      this.buffer = cleanChunk;
     }
 
-    this.lastInputLength = chunk.length;
+    this.lastInputLength = cleanChunk.length;
     this.extractCompleteSections();
     const newSlides = this.processSections();
 
@@ -242,8 +303,13 @@ export class SlideParser {
       }
 
       if (remainingBuffer.startsWith("<SECTION")) {
-        const fixedSection = remainingBuffer + "</SECTION>";
-        this.completedSections.push(fixedSection);
+        const safeSection = this.stripTrailingIncompleteTag(remainingBuffer);
+        if (safeSection.trim().length > 0) {
+          const fixedSection = safeSection.endsWith("</SECTION>")
+            ? safeSection
+            : `${safeSection}</SECTION>`;
+          this.completedSections.push(fixedSection);
+        }
       }
 
       const finalSlides = this.processSections();
@@ -302,6 +368,41 @@ export class SlideParser {
         this.clearGeneratingMarksFromNodes(node.children as Descendant[]);
       }
     }
+  }
+
+  private stripXmlCodeBlock(input: string): string {
+    let result = input.trim();
+    if (result.startsWith("```xml")) {
+      result = result.slice(6).trimStart();
+    }
+    if (result.endsWith("```")) {
+      result = result.slice(0, -3).trimEnd();
+    }
+    return result;
+  }
+
+  private stripThinkingContent(input: string): string {
+    return input
+      .replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, "")
+      .replace(/<think\b[^>]*>[\s\S]*$/gi, "")
+      .trim();
+  }
+
+  private sanitizeInput(input: string): string {
+    return this.stripXmlCodeBlock(
+      this.stripThinkingContent(this.stripXmlCodeBlock(input)),
+    );
+  }
+
+  private stripTrailingIncompleteTag(input: string): string {
+    const lastOpenTagIndex = input.lastIndexOf("<");
+    const lastCloseTagIndex = input.lastIndexOf(">");
+
+    if (lastOpenTagIndex > lastCloseTagIndex) {
+      return input.substring(0, lastOpenTagIndex).trimEnd();
+    }
+
+    return input;
   }
 
   /**
@@ -612,7 +713,7 @@ export class SlideParser {
    * Process a top-level node in the SECTION
    */
   private processTopLevelNode(node: XMLNode): PlateNode | null {
-    const tag = node.tag.toUpperCase();
+    const tag = normalizeTagName(node.tag);
 
     switch (tag) {
       case "H1":
@@ -671,7 +772,9 @@ export class SlideParser {
       case "QUOTE":
         return this.createQuote(node);
       default:
-        console.warn(`Unknown top-level tag: ${tag}`);
+        if (tag && !KNOWN_TOP_LEVEL_TAGS.has(tag)) {
+          console.warn(`Unknown top-level tag: ${tag}`);
+        }
         return null;
     }
   }
@@ -704,7 +807,7 @@ export class SlideParser {
     processedXml = processedXml.replace("</PRESENTATION>", "");
 
     try {
-      let fixedXml = processedXml;
+      let fixedXml = this.stripTrailingIncompleteTag(processedXml);
 
       if (fixedXml.includes("<SECTION") && !fixedXml.endsWith("</SECTION>")) {
         fixedXml += "</SECTION>";
@@ -795,11 +898,23 @@ export class SlideParser {
         break;
       }
 
-      const tagContent = xml.substring(tagStart + 1, tagEnd);
+      const tagContent = xml.substring(tagStart + 1, tagEnd).trim();
+
+      if (
+        !tagContent.startsWith("/") &&
+        (tagContent.includes("</SECTION") ||
+          tagContent.includes("</PRESENTATION"))
+      ) {
+        currentIndex = tagEnd + 1;
+        if (parentNode.tag.toUpperCase() === "SECTION") {
+          break;
+        }
+        continue;
+      }
 
       // Closing tag
       if (tagContent.startsWith("/")) {
-        const closingTag = tagContent.substring(1);
+        const closingTag = normalizeTagName(tagContent.substring(1));
         if (closingTag.toUpperCase() === parentNode.tag.toUpperCase()) {
           currentIndex = tagEnd + 1;
           break;
@@ -822,10 +937,10 @@ export class SlideParser {
 
       const firstSpace = tagContent.indexOf(" ");
       if (firstSpace === -1) {
-        tagName = tagContent;
+        tagName = normalizeTagName(tagContent);
         attrString = "";
       } else {
-        tagName = tagContent.substring(0, firstSpace);
+        tagName = normalizeTagName(tagContent.substring(0, firstSpace));
         attrString = tagContent.substring(firstSpace + 1);
       }
 
@@ -836,7 +951,8 @@ export class SlideParser {
       }
 
       // Self-closing tag
-      const isSelfClosing = tagContent.endsWith("/");
+      const isSelfClosing =
+        tagContent.endsWith("/") || SELF_CLOSING_TAGS.has(tagName);
       if (isSelfClosing) {
         tagName = tagName.replace(/\/$/, "");
       }
@@ -1963,7 +2079,7 @@ export class SlideParser {
     const items: ParagraphElement[] = [];
 
     for (const li of liNodes) {
-      let itemChildren = this.processNodes(li.children) as Descendant[];
+      let itemChildren = this.getTextDescendants(li);
       const contentText = this.getTextContent(li).trim();
 
       if ((!itemChildren || itemChildren.length === 0) && contentText) {

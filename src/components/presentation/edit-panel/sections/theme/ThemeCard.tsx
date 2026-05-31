@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { usePresentationState } from "@/states/presentation-state";
 import { useQueryClient } from "@tanstack/react-query";
 import { Star } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useThemePanelState } from "./theme-panel-state";
 
 interface ThemeCardProps {
@@ -43,6 +44,7 @@ export function ThemeCard({
   isOwner = false,
   isPublic = false,
 }: ThemeCardProps) {
+  const { t } = useTranslation();
   const {
     openEditMenu,
     setOpenEditMenu,
@@ -90,6 +92,9 @@ export function ThemeCard({
 
   // Font pairing display
   const fontPairing = `${theme.fonts.heading} / ${theme.fonts.body}`;
+  const translatedThemeName = t(`presentationEditor.themes.${themeId}.name`, {
+    defaultValue: theme.name,
+  });
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -233,7 +238,7 @@ export function ThemeCard({
                   }}
                   className="w-full px-3 py-1.5 text-left text-xs text-foreground transition-colors hover:bg-muted"
                 >
-                  Edit Theme
+                  {t("presentationEditor.themeCard.editTheme")}
                 </button>
                 {canDelete && (
                   <button
@@ -242,7 +247,7 @@ export function ThemeCard({
                     }}
                     className="w-full px-3 py-1.5 text-left text-xs text-red-600 transition-colors hover:bg-muted"
                   >
-                    Delete
+                    {t("presentationEditor.themeCard.delete")}
                   </button>
                 )}
               </div>
@@ -316,26 +321,26 @@ export function ThemeCard({
                 className="mb-1 text-center text-sm font-bold sm:text-base"
                 style={{ color: theme.colors.heading }}
               >
-                Title
+                {t("presentationEditor.themeCard.title")}
               </h3>
               {/* Body text with text color */}
               <p
                 className="mb-2 text-center text-[11px] sm:text-xs"
                 style={{ color: theme.colors.text }}
               >
-                Body text{" "}
+                {t("presentationEditor.themeCard.bodyText")}{" "}
                 <span
                   className="underline"
                   style={{ color: theme.colors.accent }}
                 >
-                  Link
+                  {t("presentationEditor.themeCard.link")}
                 </span>
               </p>
               {/* Smart layout color bar */}
               <div
                 className="h-1.5 w-12 rounded-full"
                 style={{ backgroundColor: theme.colors.smartLayout }}
-                title="Smart Layout"
+                title={t("presentationEditor.themeCard.smartLayout")}
               />
             </div>
           </div>
@@ -346,7 +351,7 @@ export function ThemeCard({
           <div className="mt-2 flex items-center justify-between gap-2 px-2 pb-2">
             <div className="flex min-w-0 flex-col items-start gap-0.5">
               <span className="text-left text-xs font-medium text-foreground">
-                {theme.name}
+                {translatedThemeName}
               </span>
               <span className="line-clamp-1 text-left text-xs text-muted-foreground">
                 {fontPairing.trim()}

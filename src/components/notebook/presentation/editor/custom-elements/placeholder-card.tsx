@@ -305,7 +305,6 @@ export default function PlaceHolderCard(props: PlateElementProps) {
   const applyTemplate = (template: keyof typeof templates) => {
     const slides = usePresentationState.getState().slides;
 
-    console.log(templates[template]);
     const newSlides = slides.map((slide) => {
       if (slide.id !== editor.id) {
         return slide;

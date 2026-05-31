@@ -17,7 +17,6 @@ export const CycleItem = (
   const currentSlide = slides.find((s) => s.id === props.editor.id);
   const layoutType = currentSlide?.layoutType;
 
-  console.log(layoutType);
   // Determine if we should use multi-column layout (only for 'vertical' or no layout)
   const isSingleColumn = layoutType !== "vertical";
 

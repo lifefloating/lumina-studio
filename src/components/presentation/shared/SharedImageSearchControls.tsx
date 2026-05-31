@@ -83,7 +83,6 @@ export function SharedImageSearchControls({
           link?: string;
         }>;
       const res = await searchUnsplashImages(unsplashQuery, 30, 1);
-      console.log(res.images);
       return res.success && res.images
         ? res.images.map((i) => ({
             url: i.url,

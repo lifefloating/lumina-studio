@@ -201,7 +201,7 @@ export function ThemeSelector() {
                           fontFamily: themeData.fonts.body,
                         }}
                       >
-                        {theme.description ?? "Custom theme"}
+                        {theme.description ?? t("themeModal.customTheme")}
                       </div>
                       <div className="flex gap-2">
                         {[modeColors.primary, modeColors.accent].map(
@@ -221,10 +221,10 @@ export function ThemeSelector() {
             ) : (
               <div className="flex h-64 flex-col items-center justify-center">
                 <p className="mb-4 text-muted-foreground">
-                  You haven&apos;t created any themes yet
+                  {t("themeModal.emptyUserThemes")}
                 </p>
                 <Button onClick={() => setOpenCreateThemeModal(true)}>
-                  Create Your First Theme
+                  {t("themeModal.createFirstTheme")}
                 </Button>
                 <CreateThemeModal></CreateThemeModal>
               </div>
@@ -282,10 +282,12 @@ export function ThemeSelector() {
                           fontFamily: themeData.fonts.body,
                         }}
                       >
-                        {theme.description ?? "Custom theme"}
+                        {theme.description ?? t("themeModal.customTheme")}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        By {theme.user?.name ?? "Unknown"}
+                        {t("themeModal.byAuthor", {
+                          name: theme.user?.name ?? t("themeModal.unknownAuthor"),
+                        })}
                       </div>
                       <div className="flex gap-2">
                         {[modeColors.primary, modeColors.accent].map(
@@ -305,7 +307,7 @@ export function ThemeSelector() {
             ) : (
               <div className="flex h-64 items-center justify-center">
                 <p className="text-muted-foreground">
-                  No public themes available
+                  {t("themeModal.noPublicThemesAvailable")}
                 </p>
               </div>
             )}
@@ -313,7 +315,9 @@ export function ThemeSelector() {
         </Tabs>
 
         <div className="mt-8">
-          <h3 className="mb-4 text-lg font-semibold">Built-in Themes</h3>
+          <h3 className="mb-4 text-lg font-semibold">
+            {t("themeModal.builtInThemes")}
+          </h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Object.entries(themes).map(([key, themeOption]) => {
               const modeColors = themeOption.colors;
@@ -348,7 +352,9 @@ export function ThemeSelector() {
                       fontFamily: themeOption.fonts.heading,
                     }}
                   >
-                    {themeOption.name}
+                    {t(`presentationEditor.themes.${key}.name`, {
+                      defaultValue: themeOption.name,
+                    })}
                   </div>
                   <div
                     className="text-sm"
@@ -357,7 +363,9 @@ export function ThemeSelector() {
                       fontFamily: themeOption.fonts.body,
                     }}
                   >
-                    {themeOption.description}
+                    {t(`presentationEditor.themes.${key}.description`, {
+                      defaultValue: themeOption.description,
+                    })}
                   </div>
                   <div className="flex gap-2">
                     {[modeColors.primary, modeColors.accent].map((color, i) => (
@@ -373,10 +381,14 @@ export function ThemeSelector() {
                     style={{ color: modeColors.text, opacity: 0.7 }}
                   >
                     <span className="block">
-                      Heading: {themeOption.fonts.heading}
+                      {t("themeModal.headingFont", {
+                        font: themeOption.fonts.heading,
+                      })}
                     </span>
                     <span className="block">
-                      Body: {themeOption.fonts.body}
+                      {t("themeModal.bodyFont", {
+                        font: themeOption.fonts.body,
+                      })}
                     </span>
                   </div>
                 </button>

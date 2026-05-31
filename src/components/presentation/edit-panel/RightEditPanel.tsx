@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { usePresentationRecordingState } from "@/states/presentation-recording-state";
 import { usePresentationState } from "@/states/presentation-state";
 import { BarChart3, LayoutGrid, Link as LinkIcon, Video } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ZoomControl } from "../controls/ZoomControl";
 import { TablePanelPopover } from "./sections/TablePanelPopover";
 
 export function RightEditPanel() {
+  const { t } = useTranslation();
   const setActiveRightPanel = usePresentationState(
     (s) => s.setActiveRightPanel,
   );
@@ -26,6 +28,7 @@ export function RightEditPanel() {
             variant="ghost"
             className="size-12"
             onClick={() => setActiveRightPanel("elements")}
+            aria-label={t("presentationEditor.panels.addElements")}
           >
             <LayoutGrid className="h-5 w-5" />
           </Button>
@@ -35,6 +38,7 @@ export function RightEditPanel() {
             variant="ghost"
             className="size-12"
             onClick={() => setActiveRightPanel("charts")}
+            aria-label={t("presentationEditor.panels.addCharts")}
           >
             <BarChart3 className="h-5 w-5" />
           </Button>
@@ -44,6 +48,7 @@ export function RightEditPanel() {
             variant="ghost"
             className="size-12"
             onClick={() => setActiveRightPanel("embed")}
+            aria-label={t("presentationEditor.panels.mediaEmbeds")}
           >
             <LinkIcon className="h-5 w-5" />
           </Button>
@@ -60,6 +65,7 @@ export function RightEditPanel() {
               usePresentationState.getState().setIsPresenting(true);
               usePresentationRecordingState.getState().setWantsToRecord(true);
             }}
+            aria-label={t("presentationEditor.panels.record")}
           >
             <Video className="h-5 w-5" />
           </Button>

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { GripVertical, PanelLeftOpen, PanelRightOpen } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import React, { useCallback, useLayoutEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { Resizable } from "@/components/ui/resizable";
 import { usePresentationSlides } from "@/hooks/presentation/usePresentationSlides";
@@ -31,6 +32,7 @@ function SlideSidebarBase({
   variant = "docked",
   className,
 }: SlideSidebarProps) {
+  const { t } = useTranslation();
   // Only subscribe to slide IDs to prevent re-render when content changes
   // shallow ensures array comparison is shallow (same values = no re-render)
   const slideIds = usePresentationState((s) =>
@@ -101,7 +103,9 @@ function SlideSidebarBase({
       <div className="flex flex-col space-y-4 p-4">
         {!isSheetVariant && (
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Slides</h2>
+            <h2 className="text-sm font-semibold">
+              {t("presentationEditor.panels.slides")}
+            </h2>
 
             <Button
               onClick={() => setIsSidebarCollapsed(true)}
@@ -156,7 +160,7 @@ function SlideSidebarBase({
             <button
               onClick={() => setIsSidebarCollapsed(false)}
               className="rounded-2xl border border-border/70 bg-background/95 px-3 py-4 shadow-lg backdrop-blur-sm"
-              aria-label="Open slides sidebar"
+              aria-label={t("presentationEditor.panels.openSlidesSidebar")}
             >
               <PanelLeftOpen className="size-5 text-primary" />
             </button>
@@ -170,7 +174,9 @@ function SlideSidebarBase({
             className="pointer-events-auto flex h-[min(60dvh,32rem)] w-[min(11rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-2xl border border-border/70 bg-background/95 shadow-xl backdrop-blur-sm"
           >
             <div className="flex items-center justify-between border-b border-border/60 px-3 py-2.5">
-              <h2 className="text-sm font-semibold">Slides</h2>
+              <h2 className="text-sm font-semibold">
+                {t("presentationEditor.panels.slides")}
+              </h2>
               <Button
                 onClick={() => setIsSidebarCollapsed(true)}
                 variant="ghost"
@@ -256,6 +262,7 @@ function SlideSidebarBase({
             <button
               onClick={() => setIsSidebarCollapsed(false)}
               className="rounded-md border border-(--presentation-primary) px-1 py-2"
+              aria-label={t("presentationEditor.panels.openSlidesSidebar")}
             >
               <PanelLeftOpen className="size-5 text-sm" />
             </button>

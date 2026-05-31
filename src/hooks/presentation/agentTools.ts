@@ -149,11 +149,9 @@ export function regenerateSlide(rest: Record<string, unknown>) {
   }
 
   const updatedSlides = slides.map((slide) => {
-    console.log("Slide", slide);
     if (slideIds.includes(slide.id)) {
       const slideString = slidesString[slideIds.indexOf(slide.id)] as string;
       const parsedSlide = parseSlideXml(slideString as string);
-      console.log("Parsed slide", parsedSlide);
       return {
         ...parsedSlide[0],
         id: slide.id, // Preserve the original slide ID

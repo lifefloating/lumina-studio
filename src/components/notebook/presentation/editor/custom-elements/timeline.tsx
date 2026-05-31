@@ -99,7 +99,6 @@ export default function Timeline({
   const sidedness = element.sidedness ?? "single";
   const alignment = element.alignment ?? "center";
 
-  console.log(lineVariants({ orientation, sidedness, alignment }));
   return (
     <div>
       <div

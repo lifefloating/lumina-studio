@@ -18,22 +18,33 @@ import {
   type ImageEditorMode,
   usePresentationState,
 } from "@/states/presentation-state";
-import { ImageIcon, Loader2, Search, Sparkles, Upload } from "lucide-react";
+import {
+  CircleAlert,
+  ImageIcon,
+  Loader2,
+  Search,
+  Sparkles,
+  Upload,
+} from "lucide-react";
 import { type TImageElement } from "platejs";
 import { useEditorReadOnly, useEditorRef } from "platejs/react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export interface PresentationImagePlaceholderProps {
   className?: string;
   element: TImageElement & { query?: string; id?: string };
+  error?: string | null;
   onOpenEditor?: (mode: ImageEditorMode) => void;
 }
 
 export function PresentationImagePlaceholder({
   className,
   element,
+  error,
   onOpenEditor,
 }: PresentationImagePlaceholderProps) {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editor = useEditorRef();
   const readOnly = useEditorReadOnly();
@@ -102,7 +113,9 @@ export function PresentationImagePlaceholder({
       >
         <div className="flex flex-col items-center gap-2 text-muted-foreground">
           <ImageIcon className="h-8 w-8" />
-          <span className="text-sm">No image</span>
+          <span className="text-sm">
+            {t("presentationEditor.image.noImage")}
+          </span>
         </div>
       </div>
     );
@@ -118,10 +131,21 @@ export function PresentationImagePlaceholder({
       <Empty className="w-full bg-card">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <ImageIcon />
+            {error ? <CircleAlert /> : <ImageIcon />}
           </EmptyMedia>
-          <EmptyTitle className="text-primary">No image yet</EmptyTitle>
-          <EmptyDescription>Upload or generate an image</EmptyDescription>
+          <EmptyTitle className={cn("text-primary", error && "text-destructive")}>
+            {error
+              ? t("presentationEditor.image.generationFailed")
+              : t("presentationEditor.image.noImageYet")}
+          </EmptyTitle>
+          <EmptyDescription>
+            {t("presentationEditor.image.uploadOrGenerate")}
+          </EmptyDescription>
+          {error && (
+            <EmptyDescription className="max-w-sm break-words text-destructive">
+              {error}
+            </EmptyDescription>
+          )}
         </EmptyHeader>
 
         <EmptyContent className="flex-row gap-3 text-primary">
@@ -139,7 +163,7 @@ export function PresentationImagePlaceholder({
             ) : (
               <>
                 <Upload className="size-4" />
-                Upload
+                {t("presentationEditor.image.upload")}
               </>
             )}
           </Button>
@@ -150,7 +174,7 @@ export function PresentationImagePlaceholder({
             className="gap-2"
           >
             <Sparkles className="size-4" />
-            AI Image
+            {t("presentationEditor.image.aiImage")}
           </Button>
 
           <Button
@@ -159,7 +183,7 @@ export function PresentationImagePlaceholder({
             className="gap-2"
           >
             <Search className="size-4" />
-            Search
+            {t("presentationEditor.image.search")}
           </Button>
         </EmptyContent>
       </Empty>

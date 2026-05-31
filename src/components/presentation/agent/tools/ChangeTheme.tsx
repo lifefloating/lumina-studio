@@ -12,6 +12,7 @@ import { executeToolAction } from "@/hooks/presentation/agentTools";
 import { themes, type ThemeName } from "@/lib/presentation/themes";
 import { Loader2, Palette } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type Themes = ThemeName;
 
@@ -22,6 +23,7 @@ export function PresentationChangeThemeCall({
   theme?: Themes;
   loading?: boolean;
 }) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<Themes | undefined>(theme);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -69,7 +71,9 @@ export function PresentationChangeThemeCall({
             <SelectContent>
               {Object.entries(themes).map(([key, value]) => (
                 <SelectItem key={key} value={key}>
-                  {value?.name ?? key}
+                  {t(`presentationEditor.themes.${key}.name`, {
+                    defaultValue: value?.name ?? key,
+                  })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -95,7 +99,11 @@ export function PresentationChangeThemeCall({
           <Palette className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Theme:</span>
           <span className="text-sm font-medium">
-            {selected ? themes?.[selected]?.name ?? selected : "None"}
+            {selected
+              ? t(`presentationEditor.themes.${selected}.name`, {
+                  defaultValue: themes?.[selected]?.name ?? selected,
+                })
+              : "None"}
           </span>
         </div>
         <span className="text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">

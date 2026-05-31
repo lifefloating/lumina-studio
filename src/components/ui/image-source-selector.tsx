@@ -12,11 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Image, Wand2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const IMAGE_MODELS: { value: ImageModelList; label: string }[] = [
-  { value: "fal-ai/flux-2/flash", label: "Flux 2 Flash" },
-  { value: "fal-ai/flux/dev", label: "Flux Dev" },
-  { value: "fal-ai/flux-2-pro", label: "Flux 2 Pro" },
+  { value: "gpt-image2", label: "GPT Image 2" },
 ];
 
 interface ImageSourceSelectorProps {
@@ -40,15 +39,19 @@ export function ImageSourceSelector({
   className,
   showLabel = true,
 }: ImageSourceSelectorProps) {
+  const { t } = useTranslation();
+
   return (
     <div className={className}>
       {showLabel && (
-        <Label className="mb-2 block text-sm font-medium">Image Source</Label>
+        <Label className="mb-2 block text-sm font-medium">
+          {t("presentationEditor.imageSource.label")}
+        </Label>
       )}
       <Select
         value={
           imageSource === "ai"
-            ? imageModel || "fal-ai/flux-2/flash"
+            ? imageModel || "gpt-image2"
             : imageSource === "stock"
               ? `stock-${stockImageProvider}`
               : "automatic"
@@ -71,18 +74,20 @@ export function ImageSourceSelector({
         }}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Select image generation method" />
+          <SelectValue
+            placeholder={t("presentationEditor.imageSource.placeholder")}
+          />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
             <SelectItem value="automatic" className="font-medium">
-              Automatic
+              {t("presentationEditor.imageSource.automatic")}
             </SelectItem>
           </SelectGroup>
           <SelectGroup>
             <SelectLabel className="flex items-center gap-1 text-primary/80">
               <Wand2 size={10} />
-              AI Generation
+              {t("presentationEditor.imageSource.aiGeneration")}
             </SelectLabel>
             {IMAGE_MODELS.map((model) => (
               <SelectItem key={model.value} value={model.value}>
@@ -93,7 +98,7 @@ export function ImageSourceSelector({
           <SelectGroup>
             <SelectLabel className="flex items-center gap-1 text-primary/80">
               <Image size={10} />
-              Stock Images
+              {t("presentationEditor.imageSource.stockImages")}
             </SelectLabel>
             <SelectItem value="stock-unsplash">Unsplash</SelectItem>
             <SelectItem value="stock-pixabay">Pixabay</SelectItem>

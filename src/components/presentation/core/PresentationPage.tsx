@@ -26,12 +26,24 @@ import { SlidesContainer } from "../slides/SlidesContainer";
 import { AllCommunityModule, ModuleRegistry } from "ag-charts-community";
 import { AllEnterpriseModule, LicenseManager } from "ag-charts-enterprise";
 
-ModuleRegistry.registerModules([AllCommunityModule, AllEnterpriseModule]);
 const agChartsLicenseKey = process.env.NEXT_PUBLIC_AG_CHARTS_LICENSE_KEY;
+const agChartsModules = agChartsLicenseKey
+  ? [AllCommunityModule, AllEnterpriseModule]
+  : [AllCommunityModule];
+let agChartsModulesRegistered = false;
 
-if (agChartsLicenseKey) {
-  LicenseManager.setLicenseKey(agChartsLicenseKey);
+function registerAgChartsModules() {
+  if (agChartsModulesRegistered) return;
+
+  if (agChartsLicenseKey) {
+    LicenseManager.setLicenseKey(agChartsLicenseKey);
+  }
+
+  ModuleRegistry.registerModules(agChartsModules);
+  agChartsModulesRegistered = true;
 }
+
+registerAgChartsModules();
 
 export default function PresentationPage({ readOnly = false }: { readOnly?: boolean }) {
   const params = useParams();

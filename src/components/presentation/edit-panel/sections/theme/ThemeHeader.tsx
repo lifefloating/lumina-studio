@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePresentationState } from "@/states/presentation-state";
 import { Star, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useThemePanelState } from "./theme-panel-state";
 
 export function ThemePanelHeader() {
+  const { t } = useTranslation();
   const { showFavorites, setShowFavorites, setOpenCreateThemeModal } =
     useThemePanelState();
   const setActiveRightPanel = usePresentationState(
@@ -20,7 +22,7 @@ export function ThemePanelHeader() {
         onClick={() => setOpenCreateThemeModal(true)}
         className="bg-purple-600 px-4 py-2 text-sm text-white hover:bg-purple-700"
       >
-        New Theme
+        {t("themeModal.newTheme")}
       </Button>
       <div className="flex items-center gap-2">
         <button
@@ -31,7 +33,7 @@ export function ThemePanelHeader() {
               ? "bg-yellow-100 dark:bg-yellow-900"
               : "hover:bg-muted",
           )}
-          title="Favorites"
+          title={t("themeModal.favorites")}
         >
           <Star
             className={cn(

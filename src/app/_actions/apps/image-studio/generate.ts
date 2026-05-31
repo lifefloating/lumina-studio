@@ -4,24 +4,71 @@ import {
   generateImageAction as generateTogetherImageAction,
   type ImageModelList as TogetherImageModelList,
 } from "@/app/_actions/image/generate";
-import { utapi } from "@/app/api/uploadthing/core";
 import { env } from "@/env";
 import { requireOptionalIntegration } from "@/lib/env/optional-integrations";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
-import { fal } from "@fal-ai/client";
-import { UTFile } from "uploadthing/server";
+import { createR2ObjectKey, uploadBufferToR2 } from "@/server/r2";
 
-export type FalImageModelList =
-  | "fal-ai/flux-2/flash"
-  | "fal-ai/flux-2/turbo"
-  | "fal-ai/flux/dev"
-  | "fal-ai/flux-2-pro"
-  | "fal-ai/nano-banana-pro";
+export type GptImageModelList = "gpt-image2";
 
-export type ImageModelList = TogetherImageModelList | FalImageModelList;
+export type ImageModelList = TogetherImageModelList | GptImageModelList;
 
-async function persistGeneratedImage(
+type OpenAICompatibleImageResponse = {
+  data?: Array<{
+    url?: string;
+    b64_json?: string;
+  }>;
+};
+
+function resolveImagesGenerationUrl(baseUrl: string) {
+  const trimmedBaseUrl = baseUrl.replace(/\/+$/, "");
+  return trimmedBaseUrl.endsWith("/v1")
+    ? `${trimmedBaseUrl}/images/generations`
+    : `${trimmedBaseUrl}/v1/images/generations`;
+}
+
+async function getErrorMessage(response: Response) {
+  const errorText = await response.text();
+  if (!errorText) return "";
+
+  try {
+    const errorJson = JSON.parse(errorText) as {
+      error?: { message?: string };
+      message?: string;
+    };
+    return errorJson.error?.message ?? errorJson.message ?? errorText;
+  } catch {
+    return errorText.slice(0, 400);
+  }
+}
+
+async function persistGeneratedImageToR2(
+  imageBuffer: Uint8Array,
+  prompt: string,
+  userId: string,
+  filePrefix: string,
+  contentType = "image/png",
+) {
+  const extension = contentType.split("/")[1]?.split(";")[0] ?? "png";
+  const filename = `${filePrefix}_${Date.now()}.${extension}`;
+  const key = createR2ObjectKey(filename);
+  const url = await uploadBufferToR2({
+    key,
+    body: imageBuffer,
+    contentType,
+  });
+
+  return db.generatedImage.create({
+    data: {
+      url,
+      prompt,
+      userId,
+    },
+  });
+}
+
+async function persistGeneratedImageUrlToR2(
   imageUrl: string,
   prompt: string,
   userId: string,
@@ -33,71 +80,120 @@ async function persistGeneratedImage(
   }
 
   const imageBlob = await imageResponse.blob();
-  const imageBuffer = await imageBlob.arrayBuffer();
-  const filename = `${filePrefix}_${Date.now()}.png`;
-  const utFile = new UTFile([new Uint8Array(imageBuffer)], filename);
-  const uploadResult = await utapi.uploadFiles([utFile]);
+  const imageBuffer = new Uint8Array(await imageBlob.arrayBuffer());
 
-  if (!uploadResult[0]?.data?.ufsUrl) {
-    throw new Error("Failed to upload generated image");
-  }
-
-  return db.generatedImage.create({
-    data: {
-      url: uploadResult[0].data.ufsUrl,
-      prompt,
-      userId,
-    },
-  });
+  return persistGeneratedImageToR2(
+    imageBuffer,
+    prompt,
+    userId,
+    filePrefix,
+    imageBlob.type || "image/png",
+  );
 }
 
-async function generateFalImage(
+async function persistGeneratedBase64ImageToR2(
+  b64Json: string,
   prompt: string,
-  model: FalImageModelList,
+  userId: string,
+  filePrefix: string,
+) {
+  return persistGeneratedImageToR2(
+    Buffer.from(b64Json, "base64"),
+    prompt,
+    userId,
+    filePrefix,
+    "image/png",
+  );
+}
+
+async function generateGptImage2(
+  prompt: string,
   userId: string,
 ) {
-  const falConfig = requireOptionalIntegration({
-    integration: "FAL",
-    envVar: "FAL_API_KEY",
-    value: env.FAL_API_KEY,
+  const apiKeyConfig = requireOptionalIntegration({
+    integration: "GPT Image 2",
+    envVar: "GPT_IMAGE2_API_KEY",
+    value: env.GPT_IMAGE2_API_KEY,
+    feature: "AI image generation",
+  });
+  const baseUrlConfig = requireOptionalIntegration({
+    integration: "GPT Image 2",
+    envVar: "GPT_IMAGE2_BASE_URL",
+    value: env.GPT_IMAGE2_BASE_URL,
     feature: "AI image generation",
   });
 
-  if (!falConfig.ok) {
+  if (!apiKeyConfig.ok) {
     return {
       success: false,
-      error: falConfig.error,
+      error: apiKeyConfig.error,
+    };
+  }
+  if (!baseUrlConfig.ok) {
+    return {
+      success: false,
+      error: baseUrlConfig.error,
     };
   }
 
-  fal.config({
-    credentials: falConfig.value,
-  });
-
-  const result = await fal.subscribe(model, {
-    input: {
-      prompt,
-      num_images: 1,
-      aspect_ratio: "1:1",
+  const response = await fetch(resolveImagesGenerationUrl(baseUrlConfig.value), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKeyConfig.value}`,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      model: env.GPT_IMAGE2_MODEL ?? "gpt-image2",
+      prompt,
+      n: 1,
+      size: "1024x1024",
+    }),
   });
 
-  const imageUrl = result.data?.images?.[0]?.url;
-  if (!imageUrl) {
-    throw new Error("Failed to generate image");
+  if (!response.ok) {
+    const errorMessage = await getErrorMessage(response);
+    throw new Error(
+      `GPT Image 2 API error: ${response.status}${errorMessage ? ` ${errorMessage}` : ""}`,
+    );
   }
 
-  const image = await persistGeneratedImage(imageUrl, prompt, userId, "image");
+  const result = (await response.json()) as OpenAICompatibleImageResponse;
+  const image = result.data?.[0];
 
-  return {
-    success: true,
-    image,
-  };
+  if (image?.url) {
+    const generatedImage = await persistGeneratedImageUrlToR2(
+      image.url,
+      prompt,
+      userId,
+      "image",
+    );
+
+    return {
+      success: true,
+      image: generatedImage,
+    };
+  }
+
+  if (image?.b64_json) {
+    const generatedImage = await persistGeneratedBase64ImageToR2(
+      image.b64_json,
+      prompt,
+      userId,
+      "image",
+    );
+
+    return {
+      success: true,
+      image: generatedImage,
+    };
+  }
+
+  throw new Error("Failed to generate image");
 }
 
 export async function generateImageAction(
   prompt: string,
-  model: ImageModelList = "fal-ai/flux-2/flash",
+  model: ImageModelList = "gpt-image2",
 ) {
   const session = await auth();
 
@@ -109,12 +205,8 @@ export async function generateImageAction(
   }
 
   try {
-    if (model.startsWith("fal-ai/")) {
-      return await generateFalImage(
-        prompt,
-        model as FalImageModelList,
-        session.user.id,
-      );
+    if (model === "gpt-image2") {
+      return await generateGptImage2(prompt, session.user.id);
     }
 
     return await generateTogetherImageAction(

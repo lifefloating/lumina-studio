@@ -7,6 +7,7 @@ import { DRAG_ITEM_BLOCK } from "@platejs/dnd";
 import { GripVertical } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import { chartItems, type PaletteItem } from "./elements";
 
 // Base dimensions for chart rendering (rendered at this size, then scaled down)
@@ -40,6 +41,7 @@ export function ChartPanel({ isLoaded }: { isLoaded: boolean }) {
 }
 
 function ChartCard({ item }: { item: PaletteItem }) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [scale, setScale] = useState(0.5);
 
@@ -82,7 +84,11 @@ function ChartCard({ item }: { item: PaletteItem }) {
     >
       <div className="mb-2 flex items-center gap-1.5 text-xs font-medium">
         <GripVertical className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
-        <span>{item.label}</span>
+        <span>
+          {t(`presentationEditor.palette.${item.key}`, {
+            defaultValue: item.label,
+          })}
+        </span>
       </div>
       <div
         ref={containerRef}

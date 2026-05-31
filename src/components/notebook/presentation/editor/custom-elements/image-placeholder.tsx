@@ -22,6 +22,7 @@ import {
 import { DRAG_ITEM_BLOCK } from "@platejs/dnd";
 import {
   BarChart3,
+  CircleAlert,
   ImageIcon,
   Loader2,
   Search,
@@ -31,6 +32,7 @@ import {
 import { type TElement } from "platejs";
 import { useRef } from "react";
 import { useDrop } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export interface ImagePlaceholderProps {
@@ -46,9 +48,13 @@ export default function ImagePlaceholder({
   slideId,
   onOpenEditor,
 }: ImagePlaceholderProps) {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const setSlides = usePresentationState((s) => s.setSlides);
   const setCurrentSlideId = usePresentationState((s) => s.setCurrentSlideId);
+  const rootImageGeneration = usePresentationState(
+    (s) => s.rootImageGeneration,
+  );
   const { saveImmediately } = useDebouncedSave();
   const { uploadFile, isUploading, progress } = useUploadFile({
     onUploadComplete: (file) => {
@@ -72,6 +78,9 @@ export default function ImagePlaceholder({
     },
   });
   const uploadProgress = Math.trunc(progress);
+  const generationState = rootImageGeneration[slideId];
+  const generationError =
+    generationState?.status === "error" ? generationState.error : undefined;
 
   const handleUploadClick = () => {
     if (!isStatic && fileInputRef.current) {
@@ -164,17 +173,35 @@ export default function ImagePlaceholder({
       {isOver && canDrop ? (
         <div className="flex flex-col items-center gap-2 text-primary">
           <BarChart3 className="h-12 w-12" />
-          <p className="text-sm font-medium">Drop chart here</p>
+          <p className="text-sm font-medium">
+            {t("presentationEditor.image.dropChart")}
+          </p>
         </div>
       ) : (
         <div>
           <Empty className="w-full bg-card">
             <EmptyHeader>
               <EmptyMedia variant="icon">
-                <ImageIcon />
+                {generationError ? <CircleAlert /> : <ImageIcon />}
               </EmptyMedia>
-              <EmptyTitle className="text-primary">No image yet</EmptyTitle>
-              <EmptyDescription>Upload or generate an image</EmptyDescription>
+              <EmptyTitle
+                className={cn(
+                  "text-primary",
+                  generationError && "text-destructive",
+                )}
+              >
+                {generationError
+                  ? t("presentationEditor.image.generationFailed")
+                  : t("presentationEditor.image.noImageYet")}
+              </EmptyTitle>
+              <EmptyDescription>
+                {t("presentationEditor.image.uploadOrGenerate")}
+              </EmptyDescription>
+              {generationError && (
+                <EmptyDescription className="max-w-sm break-words text-destructive">
+                  {generationError}
+                </EmptyDescription>
+              )}
             </EmptyHeader>
 
             <EmptyContent className="flex-row gap-3 text-primary">
@@ -192,7 +219,7 @@ export default function ImagePlaceholder({
                 ) : (
                   <>
                     <Upload className="size-4" />
-                    Upload
+                    {t("presentationEditor.image.upload")}
                   </>
                 )}
               </Button>
@@ -207,7 +234,7 @@ export default function ImagePlaceholder({
                 className="gap-2"
               >
                 <Sparkles className="size-4" />
-                AI Image
+                {t("presentationEditor.image.aiImage")}
               </Button>
 
               <Button
@@ -220,7 +247,7 @@ export default function ImagePlaceholder({
                 className="gap-2"
               >
                 <Search className="size-4" />
-                Search for Image
+                {t("presentationEditor.image.searchForImage")}
               </Button>
             </EmptyContent>
           </Empty>

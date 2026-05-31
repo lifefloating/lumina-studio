@@ -342,14 +342,7 @@ export function SharedGenerateControls({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="fal-ai/flux-2/flash">
-                  Flux 2 Flash
-                </SelectItem>
-                <SelectItem value="fal-ai/flux-2/turbo">
-                  Flux 2 Turbo
-                </SelectItem>
-                <SelectItem value="fal-ai/flux/dev">Flux Dev</SelectItem>
-                <SelectItem value="fal-ai/flux-2-pro">Flux 2 Pro</SelectItem>
+                <SelectItem value="gpt-image2">GPT Image 2</SelectItem>
               </SelectContent>
             </Select>
           </div>

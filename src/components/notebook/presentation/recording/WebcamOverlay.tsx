@@ -17,7 +17,6 @@ export function WebcamOverlay() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
-  console.log("WebcamOverlay", wantsToRecord, webcamEnabled);
   // Get camera stream when setup opens and webcam is enabled
   const getCameraStream = useCallback(async () => {
     if (!webcamEnabled || !wantsToRecord) return;
@@ -82,7 +81,6 @@ export function WebcamOverlay() {
         bottom: window.innerHeight,
       }}
       onDragEnd={(_, info) => {
-        console.log(info.point);
         setOverlayPosition(
           Math.max(0, info.point.x),
           Math.max(0, info.point.y),

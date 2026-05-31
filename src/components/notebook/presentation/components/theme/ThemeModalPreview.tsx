@@ -4,6 +4,7 @@ import { testSlides } from "@/components/notebook/presentation/components/theme/
 import { ScaledSlide } from "@/components/notebook/presentation/components/theme/ScaledSlide";
 import { ThemeBackground } from "@/components/notebook/presentation/components/theme/ThemeBackground";
 import { type ThemeProperties } from "@/lib/presentation/themes";
+import { useTranslation } from "react-i18next";
 
 interface ThemeModalPreviewProps {
   selectedThemeData: ThemeProperties | null;
@@ -18,11 +19,13 @@ const SCALE = 0.53;
 export function ThemeModalPreview({
   selectedThemeData,
 }: ThemeModalPreviewProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="hidden h-[calc(85vh)] w-[60%] flex-col overflow-y-auto bg-muted/30 lg:flex">
       {/* Preview Header */}
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border p-4">
-        <h2 className="text-lg font-semibold">Preview</h2>
+        <h2 className="text-lg font-semibold">{t("themeModal.preview")}</h2>
       </div>
 
       {/* Preview Content */}

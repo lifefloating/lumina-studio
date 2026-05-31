@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { type TElement } from "platejs";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { type RootImage as RootImageType } from "../../../utils/parser";
 import { type ImageCropSettings } from "../../../utils/types";
 import { EmbedRenderer } from "../embeds/EmbedRenderer";
@@ -61,6 +62,7 @@ export function EmbedControls({
   cropSettings,
   onCropSettingsChange,
 }: EmbedControlsProps) {
+  const { t } = useTranslation();
   const [selectedType, setSelectedType] = useState(embedType || "image");
   const [url, setUrl] = useState(embedUrl || "");
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +83,7 @@ export function EmbedControls({
       onEmbedChange("image", uploadedUrl);
     },
     onUploadError: (error) => {
-      setError("Failed to upload image");
+      setError(t("presentationEditor.image.failedUpload"));
       console.error(error);
     },
   });
@@ -101,7 +103,9 @@ export function EmbedControls({
     if (url && selectedType) {
       const valid = isValidEmbedUrl(url, selectedType);
       setIsValid(valid);
-      setError(valid ? null : "Invalid URL for selected embed type");
+      setError(
+        valid ? null : t("presentationEditor.image.invalidEmbedUrl"),
+      );
     } else {
       setIsValid(false);
       setError(null);
@@ -187,12 +191,12 @@ export function EmbedControls({
                 // biome-ignore lint/performance/noImgElement: This is necessary to support different types of thing
                 <img
                   src={url}
-                  alt="Preview"
+                  alt={t("presentationEditor.image.previewAlt")}
                   className="h-full w-full object-cover"
                 />
               ) : (
                 <div className="flex items-center justify-center text-sm text-muted-foreground">
-                  Enter an image URL
+                  {t("presentationEditor.image.enterImageUrl")}
                 </div>
               )
             ) : (
@@ -231,15 +235,21 @@ export function EmbedControls({
       </div>
 
       <div className="max-w-full space-y-3">
-        <Label className="text-sm font-medium">Embed Type</Label>
+        <Label className="text-sm font-medium">
+          {t("presentationEditor.image.embedType")}
+        </Label>
         <Select value={selectedType} onValueChange={setSelectedType}>
           <SelectTrigger>
-            <SelectValue placeholder="Select embed type" />
+            <SelectValue
+              placeholder={t("presentationEditor.image.selectEmbedType")}
+            />
           </SelectTrigger>
           <SelectContent>
             {embedTypes.map(({ type, config }) => (
               <SelectItem key={type} value={type}>
-                {config.name}
+                {t(`presentationEditor.mediaEmbeds.${type}.label`, {
+                  defaultValue: config.name,
+                })}
               </SelectItem>
             ))}
           </SelectContent>
@@ -247,13 +257,15 @@ export function EmbedControls({
       </div>
 
       <div className="max-w-full space-y-3">
-        <Label className="text-sm font-medium">URL</Label>
+        <Label className="text-sm font-medium">
+          {t("presentationEditor.image.url")}
+        </Label>
         <div className="flex gap-2">
           <Input
             placeholder={
               isImageType
-                ? "Paste your image URL here..."
-                : "Paste your embed URL here..."
+                ? t("presentationEditor.image.pasteImageUrl")
+                : t("presentationEditor.image.pasteEmbedUrl")
             }
             value={url}
             onChange={(e) => handleUrlChange(e.target.value)}
@@ -267,7 +279,7 @@ export function EmbedControls({
               size="icon"
               onClick={handleUploadClick}
               disabled={isUploading}
-              title="Upload image"
+              title={t("presentationEditor.image.uploadImage")}
               className="shrink-0"
             >
               {isUploading ? (
@@ -288,7 +300,9 @@ export function EmbedControls({
         </div>
         {isUploading && (
           <div className="text-xs text-muted-foreground">
-            Uploading... {Math.round(progress)}%
+            {t("presentationEditor.image.uploading", {
+              progress: Math.round(progress),
+            })}
           </div>
         )}
         {error && (
@@ -305,7 +319,9 @@ export function EmbedControls({
           disabled={!selectedType || !url || !isValid}
           className="w-full"
         >
-          {isImageType ? "Apply Image URL" : "Apply Embed"}
+          {isImageType
+            ? t("presentationEditor.image.applyImageUrl")
+            : t("presentationEditor.image.applyEmbed")}
         </Button>
 
         {embedType && (
@@ -315,7 +331,7 @@ export function EmbedControls({
             className="w-full text-destructive hover:text-destructive"
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            Remove Embed
+            {t("presentationEditor.image.removeEmbed")}
           </Button>
         )}
       </div>

@@ -5,6 +5,7 @@
 import { type ThemeProperties } from "@/lib/presentation/themes";
 import { cn } from "@/lib/utils";
 import { type RefObject } from "react";
+import { useTranslation } from "react-i18next";
 import { type PlateSlide } from "../../../utils/parser";
 import { ThemeBackground } from "../ThemeBackground";
 import { type PreviewTab } from "./create-theme-types";
@@ -25,6 +26,8 @@ export function PreviewSection({
   slidesToDisplay,
   onTabChange,
 }: PreviewSectionProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       ref={containerRef}
@@ -46,7 +49,9 @@ export function PreviewSection({
                 )}
                 type="button"
               >
-                {tab === "test" ? "Test page" : "Current page"}
+                {tab === "test"
+                  ? t("themeModal.testPage")
+                  : t("themeModal.currentPage")}
               </button>
             ))}
           </div>
@@ -67,8 +72,8 @@ export function PreviewSection({
                 <div className="rounded-lg bg-background p-8 text-center shadow-lg">
                   <p className="text-muted-foreground">
                     {previewTab === "current"
-                      ? "No slides available. Create some slides first."
-                      : "No test slides available."}
+                      ? t("themeModal.noCurrentSlides")
+                      : t("themeModal.noTestSlides")}
                   </p>
                 </div>
               )}

@@ -25,6 +25,37 @@ function normalizeDescendant(node: Descendant): Descendant {
     return node;
   }
 
+  if (node.type === "table") {
+    return {
+      ...node,
+      children: Array.isArray(node.children)
+        ? node.children
+            .filter(
+              (child): child is Descendant =>
+                !isTextDescendant(child as Descendant) &&
+                (child as { type?: unknown }).type === "tr",
+            )
+            .map((child) => normalizeDescendant(child as Descendant))
+        : [],
+    };
+  }
+
+  if (node.type === "tr") {
+    return {
+      ...node,
+      children: Array.isArray(node.children)
+        ? node.children
+            .filter(
+              (child): child is Descendant =>
+                !isTextDescendant(child as Descendant) &&
+                ((child as { type?: unknown }).type === "td" ||
+                  (child as { type?: unknown }).type === "th"),
+            )
+            .map((child) => normalizeDescendant(child as Descendant))
+        : [],
+    };
+  }
+
   const normalizedChildren = Array.isArray(node.children)
     ? node.children.map((child) => normalizeDescendant(child as Descendant))
     : [];

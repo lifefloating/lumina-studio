@@ -23,6 +23,17 @@ function stripXmlCodeBlock(input: string): string {
   return result;
 }
 
+function stripThinkingContent(input: string): string {
+  return input
+    .replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think\b[^>]*>[\s\S]*$/gi, "")
+    .trim();
+}
+
+function sanitizeGeneratedContent(input: string): string {
+  return stripXmlCodeBlock(stripThinkingContent(stripXmlCodeBlock(input)));
+}
+
 interface SlideGenerationContextValue {
   isGenerating: boolean;
   generatingSlideId: string | null;
@@ -63,7 +74,7 @@ export function SlideGenerationProvider({ children }: { children: ReactNode }) {
     api: "/api/presentation/generate-slide",
     onFinish: (_prompt, finalCompletion) => {
       // Parse final content and update the slide only when fully complete
-      const processedCompletion = stripXmlCodeBlock(finalCompletion);
+      const processedCompletion = sanitizeGeneratedContent(finalCompletion);
       parserRef.current.reset();
       parserRef.current.parseChunk(processedCompletion);
       parserRef.current.finalize();

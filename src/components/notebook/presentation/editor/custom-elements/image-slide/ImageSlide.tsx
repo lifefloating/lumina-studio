@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { usePresentationState } from "@/states/presentation-state";
 import { DRAG_ITEM_BLOCK, type ElementDragItemNode } from "@platejs/dnd";
 import {
+  CircleAlert,
   Copy,
   Download,
   Edit,
@@ -22,6 +23,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useDrop } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { type RootImage } from "../../../utils/parser";
 
@@ -31,6 +33,7 @@ interface ImageSlideProps {
 }
 
 export default function ImageSlide({ image, slideId }: ImageSlideProps) {
+  const { t } = useTranslation();
   const slides = usePresentationState((s) => s.slides);
   const setSlides = usePresentationState((s) => s.setSlides);
   const setCurrentSlide = usePresentationState((s) => s.setCurrentSlideId);
@@ -43,6 +46,8 @@ export default function ImageSlide({ image, slideId }: ImageSlideProps) {
   const computedGen = rootImageGeneration[slideId];
   const isGenerating =
     computedGen?.status === "queued" || computedGen?.status === "generating";
+  const generationError =
+    computedGen?.status === "error" ? computedGen.error : undefined;
 
   const handleAction = (action: string) => {
     switch (action) {
@@ -126,8 +131,6 @@ export default function ImageSlide({ image, slideId }: ImageSlideProps) {
         setSlides(filteredSlides);
         toast("Slide removed");
         break;
-      default:
-        console.log(`Action: ${action}`);
     }
   };
 
@@ -221,7 +224,7 @@ export default function ImageSlide({ image, slideId }: ImageSlideProps) {
               <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center bg-muted/30 p-4">
                 <Spinner className="mb-2 h-8 w-8" />
                 <p className="text-sm text-muted-foreground">
-                  Generating image...
+                  {t("presentationEditor.image.generating")}
                 </p>
               </div>
             ) : computedImageUrl ? (
@@ -237,9 +240,19 @@ export default function ImageSlide({ image, slideId }: ImageSlideProps) {
                     : "center",
                 }}
               />
+            ) : generationError ? (
+              <div className="absolute inset-0 z-10 flex h-full w-full flex-col items-center justify-center gap-2 bg-muted/30 p-4 text-center">
+                <CircleAlert className="h-8 w-8 text-destructive" />
+                <p className="text-sm font-medium text-destructive">
+                  {t("presentationEditor.image.generationFailed")}
+                </p>
+                <p className="max-w-md break-words text-xs text-destructive">
+                  {generationError}
+                </p>
+              </div>
             ) : (
               <div className="flex items-center justify-center text-muted-foreground">
-                <span>No image</span>
+                <span>{t("presentationEditor.image.noImage")}</span>
               </div>
             )}
             {/* Drop indicator overlay */}
@@ -247,7 +260,7 @@ export default function ImageSlide({ image, slideId }: ImageSlideProps) {
               <div className="absolute inset-0 z-10 flex items-center justify-center border-2 border-dashed border-primary bg-primary/20">
                 <div className="rounded-md bg-background/90 px-4 py-2 shadow-lg">
                   <span className="text-sm font-medium text-primary">
-                    Drop to add element
+                    {t("presentationEditor.image.dropToAddElement")}
                   </span>
                 </div>
               </div>

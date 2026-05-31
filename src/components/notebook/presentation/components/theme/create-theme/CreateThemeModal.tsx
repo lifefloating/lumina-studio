@@ -14,6 +14,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { type ThemeFormValues } from "../types";
 import { colorThemes, type PreviewTab } from "./create-theme-types";
@@ -35,6 +36,7 @@ export const DEFAULT_THEME_VALUES: ThemeFormValues = {
 };
 
 export function CreateThemeModal() {
+  const { t } = useTranslation();
   const {
     setOpenCreateThemeModal,
     openCreateThemeModal,
@@ -66,16 +68,18 @@ export function CreateThemeModal() {
     }
 
     if (editingTheme) {
-      // Get the base name, falling back to themeData name or "Custom Theme"
+      // Get the base name, falling back to themeData name or the generic label.
       const baseName =
-        editingTheme.name || editingTheme.themeData?.name || "Custom Theme";
+        editingTheme.name ||
+        editingTheme.themeData?.name ||
+        t("themeModal.customTheme");
 
       if (isCustomizing) {
         // When customizing, use the theme data and prefill name with "Copy of {theme name}"
         // Only prepend "Copy of" if it's not already there
         const name = baseName.startsWith("Copy of ")
           ? baseName
-          : `Copy of ${baseName}`;
+          : t("themeModal.copyOf", { name: baseName });
 
         return {
           isPublic: false,
@@ -95,7 +99,7 @@ export function CreateThemeModal() {
       };
     }
     return DEFAULT_THEME_VALUES;
-  }, [editingTheme, isCustomizing, importedThemeData]);
+  }, [editingTheme, isCustomizing, importedThemeData, t]);
 
   // Form
   const form = useForm<ThemeFormValues>({
@@ -172,10 +176,11 @@ export function CreateThemeModal() {
             builtInTheme?.name ||
             editingTheme?.themeData?.name ||
             String(currentThemeId) ||
-            "Custom Theme";
+            t("themeModal.customTheme");
 
           // Use the user's input if provided, otherwise use "Copy of {original}"
-          const themeName = name || `Copy of ${originalThemeName}`;
+          const themeName =
+            name || t("themeModal.copyOf", { name: originalThemeName });
 
           // Creating new theme from customization
           const createResult = await createCustomTheme({
@@ -283,7 +288,9 @@ export function CreateThemeModal() {
       const currentThemeId = usePresentationState.getState().theme;
       const builtInTheme = themes[currentThemeId as keyof typeof themes];
       const originalThemeName =
-        builtInTheme?.name || editingTheme?.themeData?.name || "Custom Theme";
+        builtInTheme?.name ||
+        editingTheme?.themeData?.name ||
+        t("themeModal.customTheme");
 
       const customThemeData = {
         ...themeStyleData,
@@ -330,7 +337,7 @@ export function CreateThemeModal() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [currentPresentationId, form, handleClose]);
+  }, [currentPresentationId, editingTheme?.themeData?.name, form, handleClose, t]);
 
   // Handler for "Save & Create New" - create a new theme copy and apply it
   const handleSaveAndCreateNew = useCallback(async () => {
@@ -370,10 +377,11 @@ export function CreateThemeModal() {
         builtInTheme?.name ||
         editingTheme?.themeData?.name ||
         String(currentThemeId) ||
-        "Custom Theme";
+        t("themeModal.customTheme");
 
       // Use the user's input if provided, otherwise use "Copy of {original}"
-      const themeName = data.name || `Copy of ${originalThemeName}`;
+      const themeName =
+        data.name || t("themeModal.copyOf", { name: originalThemeName });
 
       // Create the new theme
       const createResult = await createCustomTheme({
@@ -425,6 +433,7 @@ export function CreateThemeModal() {
     form,
     handleClose,
     queryClient,
+    t,
   ]);
 
   // Reset form when modal opens/closes or editingTheme/isCustomizing/importedThemeData changes

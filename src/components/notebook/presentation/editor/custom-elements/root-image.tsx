@@ -22,10 +22,12 @@ import {
 import { DRAG_ITEM_BLOCK } from "@platejs/dnd";
 import {
   BarChart3,
+  CircleAlert,
   Edit,
   ImageOff,
   Link,
   Scissors,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { nanoid } from "nanoid";
@@ -33,6 +35,7 @@ import { KEYS, type TElement } from "platejs";
 import { useEditorReadOnly } from "platejs/react";
 import { useMemo, useState } from "react";
 import { useDrop } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import { type RootImage as RootImageType } from "../../utils/parser";
 import { type ImageCropSettings } from "../../utils/types";
 import { isChartType } from "../lib";
@@ -82,6 +85,7 @@ export default function RootImage({
   maxHeightPx,
   heightPx,
 }: RootImageProps) {
+  const { t } = useTranslation();
   const isSideLayout = layoutType === "left" || layoutType === "right";
   // State for showing delete popover
   const [showDeletePopover, setShowDeletePopover] = useState(false);
@@ -127,6 +131,8 @@ export default function RootImage({
     typeof maxHeightPx === "number" && maxHeightPx > 0
       ? `${maxHeightPx}px`
       : undefined;
+  const generationError =
+    computedGen?.status === "error" ? computedGen.error : undefined;
 
   // Ensure popover closes when delete action is invoked
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -287,8 +293,6 @@ export default function RootImage({
 
         clearRootImageGeneration(slideId);
         break;
-      default:
-        console.log(`Action: ${action}`);
     }
   };
 
@@ -516,21 +520,21 @@ export default function RootImage({
                     <>
                       <ImageIcon className="h-12 w-12 text-primary" />
                       <p className="mt-2 text-sm font-medium text-primary">
-                        Drop image here
+                        {t("presentationEditor.image.dropImage")}
                       </p>
                     </>
                   ) : isEmbedDrop ? (
                     <>
                       <Link className="h-12 w-12 text-primary" />
                       <p className="mt-2 text-sm font-medium text-primary">
-                        Drop embed here
+                        {t("presentationEditor.image.dropEmbed")}
                       </p>
                     </>
                   ) : (
                     <>
                       <BarChart3 className="h-12 w-12 text-primary" />
                       <p className="mt-2 text-sm font-medium text-primary">
-                        Drop chart here
+                        {t("presentationEditor.image.dropChart")}
                       </p>
                     </>
                   )}
@@ -544,8 +548,37 @@ export default function RootImage({
                   <div className="flex h-full flex-col items-center justify-center bg-muted/30 p-4">
                     <Spinner className="mb-2 h-8 w-8" />
                     <p className="text-sm text-muted-foreground">
-                      Generating image for &quot;{image.query}&quot;...
+                      {t("presentationEditor.image.generatingFor", {
+                        query: image.query,
+                      })}
                     </p>
+                  </div>
+                ) : generationError &&
+                  !computedImageUrl &&
+                  !image.embedType &&
+                  !image.chartType ? (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 bg-muted/30 p-4 text-center">
+                    <CircleAlert className="h-8 w-8 text-destructive" />
+                    <p className="text-sm font-medium text-destructive">
+                      {t("presentationEditor.image.generationFailed")}
+                    </p>
+                    <p className="max-w-md break-words text-xs text-destructive">
+                      {generationError}
+                    </p>
+                    {!readOnly && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 gap-2"
+                        onClick={() => {
+                          setCurrentSlide(slideId);
+                          openImageEditor("generate");
+                        }}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        {t("presentationEditor.image.aiImage")}
+                      </Button>
+                    )}
                   </div>
                 ) : !computedImageUrl &&
                   !image.embedType &&

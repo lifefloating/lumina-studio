@@ -8,6 +8,7 @@ import { GripVertical } from "lucide-react";
 import type React from "react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
+import { useTranslation } from "react-i18next";
 // import { toast } from "sonner";
 import { type PaletteItem, paletteItems, slideWith } from "./elements";
 
@@ -157,6 +158,7 @@ function PaletteCard({
   item: PaletteItem;
   isVisible: boolean;
 }) {
+  const { t } = useTranslation();
   // const editor = useEditorRef<MyEditor>();
   // const selectedIds = usePluginOption(BlockSelectionPlugin, "selectedIds");
   // const currentSlideId = usePresentationState((s) => s.currentSlideId);
@@ -184,7 +186,11 @@ function PaletteCard({
             "h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground",
           )}
         />
-        <span>{item.label}</span>
+        <span>
+          {t(`presentationEditor.palette.${item.key}`, {
+            defaultValue: item.label,
+          })}
+        </span>
       </div>
       <div className="rounded-sm border bg-card">
         <DelayedEditorWrapper item={item} isVisible={isVisible} />

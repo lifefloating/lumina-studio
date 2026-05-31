@@ -7,6 +7,7 @@ import { usePresentationTheme } from "@/components/presentation/providers/Presen
 import { type ThemeProperties } from "@/lib/presentation/themes";
 import { useMemo } from "react";
 import { type Control, useWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { type PlateSlide } from "../../../utils/parser";
 
 interface UsePreviewDataProps {
@@ -20,6 +21,7 @@ export function usePreviewData({
   previewTab,
   currentSlides,
 }: UsePreviewDataProps) {
+  const { t } = useTranslation();
   // Use useWatch to properly subscribe to form changes
   const values = useWatch({ control });
 
@@ -27,7 +29,7 @@ export function usePreviewData({
   const previewThemeData: ThemeProperties = useMemo(
     () =>
       ({
-        name: values.name || "Preview Theme",
+        name: values.name || t("themeModal.previewTheme"),
         description: values.description || "",
         colors: values.colors,
         fonts: values.fonts as ThemeProperties["fonts"],
@@ -38,7 +40,7 @@ export function usePreviewData({
         mode: resolvedTheme as unknown as "light" | "dark",
       }) as ThemeProperties,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(values), resolvedTheme],
+    [JSON.stringify(values), resolvedTheme, t],
   );
 
   const slidesToDisplay = useMemo(() => {

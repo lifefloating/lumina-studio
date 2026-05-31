@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { PresentationAgentPanel } from "../agent/PresentationAgentPanel";
 import { GlobalSettings } from "../controls/global-settings/GlobalSettings";
 import { BackgroundPanel } from "./sections/BackgroundPanel";
@@ -32,19 +33,19 @@ const RIGHT_PANEL_WIDTH_PX = 416;
 // Panel titles and icons for panels that need our generic header
 const PANEL_INFO = {
   elements: {
-    title: "Add elements",
+    titleKey: "presentationEditor.panels.addElements",
     icon: <LayoutGrid className="h-4 w-4 text-primary" />,
   },
   charts: {
-    title: "Add Charts",
+    titleKey: "presentationEditor.panels.addCharts",
     icon: <BarChart3 className="h-4 w-4 text-primary" />,
   },
   embed: {
-    title: "Media Embeds",
+    titleKey: "presentationEditor.panels.mediaEmbeds",
     icon: <LinkIcon className="h-4 w-4 text-primary" />,
   },
   background: {
-    title: "Background",
+    titleKey: "presentationEditor.panels.background",
     icon: <ImageIcon className="h-4 w-4 text-primary" />,
   },
 } as const;
@@ -67,6 +68,7 @@ function PanelHeader({
   panel: RightPanelType;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const info = PANEL_INFO[panel as keyof typeof PANEL_INFO];
   if (!info) return null;
 
@@ -74,7 +76,9 @@ function PanelHeader({
     <div className="flex items-center justify-between border-b px-4 py-2">
       <div className="flex items-center gap-2">
         {info.icon}
-        <h2 className="text-sm font-semibold tracking-wide">{info.title}</h2>
+        <h2 className="text-sm font-semibold tracking-wide">
+          {t(info.titleKey)}
+        </h2>
       </div>
       <Button
         variant="ghost"

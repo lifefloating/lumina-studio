@@ -4,9 +4,11 @@ import { ImageSourceSelector } from "@/components/ui/image-source-selector";
 import { Label } from "@/components/ui/label";
 import { themes } from "@/lib/presentation/themes";
 import { usePresentationState } from "@/states/presentation-state";
+import { useTranslation } from "react-i18next";
 import { ThemeModal } from "./ThemeModal";
 
 export function ThemeSettings() {
+  const { t } = useTranslation();
   const {
     theme,
     setTheme,
@@ -21,21 +23,25 @@ export function ThemeSettings() {
   return (
     <div className="mb-32! space-y-5 rounded-2xl border border-border/60 bg-muted/35 p-4 sm:p-6">
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold">Customize Theme</h2>
+        <h2 className="text-lg font-semibold">
+          {t("presentationEditor.themeSettings.customizeTheme")}
+        </h2>
         <p className="text-sm text-muted-foreground">
-          Pick a visual direction and image source before rendering slides.
+          {t("presentationEditor.themeSettings.description")}
         </p>
       </div>
       <div className="space-y-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <Label className="text-sm font-medium">Theme & Layout</Label>
+            <Label className="text-sm font-medium">
+              {t("presentationEditor.themeSettings.themeAndLayout")}
+            </Label>
             <ThemeModal>
               <Button
                 variant="link"
                 className="h-auto p-0 text-sm font-medium whitespace-nowrap"
               >
-                More Themes
+                {t("presentationEditor.themeSettings.moreThemes")}
               </Button>
             </ThemeModal>
           </div>

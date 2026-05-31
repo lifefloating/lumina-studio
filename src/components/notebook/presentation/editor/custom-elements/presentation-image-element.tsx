@@ -26,6 +26,7 @@ import {
 import { Image, useMediaState } from "@platejs/media/react";
 import { ResizableProvider, ResizeHandle } from "@platejs/resizable";
 import { type TImageElement } from "platejs";
+import { useTranslation } from "react-i18next";
 import { type ImageCropSettings } from "../../utils/types";
 import { useDraggable } from "../dnd/hooks/useDraggable";
 import { PresentationImagePlaceholder } from "./presentation-image-placeholder";
@@ -50,6 +51,7 @@ export const PresentationImageElement = withHOC(
     ref,
     ...props
   }: PresentationImageElementProps) {
+    const { t } = useTranslation();
     const { align = "center", focused, readOnly, selected } = useMediaState();
     const { isDragging, handleRef } = useDraggable({
       element: props.element,
@@ -61,6 +63,7 @@ export const PresentationImageElement = withHOC(
     const [imageUrl, setImageUrl] = useState<string | undefined>(
       props.element.url,
     );
+    const [generationError, setGenerationError] = useState<string | null>(null);
 
     const imageSource = usePresentationState((s) => s.imageSource);
     const imageModel = usePresentationState((s) => s.imageModel);
@@ -98,6 +101,7 @@ export const PresentationImageElement = withHOC(
         return;
       }
       setIsGenerating(true);
+      setGenerationError(null);
       try {
         hasHandledGenerationRef.current = true;
         let result;
@@ -136,9 +140,25 @@ export const PresentationImageElement = withHOC(
           setTimeout(() => {
             void saveImmediately();
           }, 500);
+        } else if (
+          result &&
+          typeof result === "object" &&
+          "success" in result &&
+          result.success === false
+        ) {
+          setGenerationError(
+            typeof result.error === "string"
+              ? result.error
+              : t("presentationEditor.image.generationFailed"),
+          );
         }
       } catch (error) {
         console.error("Error generating image:", error);
+        setGenerationError(
+          error instanceof Error
+            ? error.message
+            : t("presentationEditor.image.generationFailed"),
+        );
       } finally {
         setIsGenerating(false);
       }
@@ -233,7 +253,7 @@ export const PresentationImageElement = withHOC(
                   <div className="flex flex-col items-center gap-2">
                     <Spinner className="h-6 w-6" />
                     <span className="text-sm text-muted-foreground">
-                      Generating image...
+                      {t("presentationEditor.image.generating")}
                     </span>
                   </div>
                 </div>
@@ -253,6 +273,7 @@ export const PresentationImageElement = withHOC(
                 <PresentationImagePlaceholder
                   className="pointer-events-auto h-full w-full rounded-[inherit]"
                   element={props.element}
+                  error={generationError}
                 />
               </div>
             ) : (

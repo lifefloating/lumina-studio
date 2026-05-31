@@ -6,6 +6,7 @@ import { useDebouncedSave } from "@/hooks/presentation/useDebouncedSave";
 import { usePresentationState } from "@/states/presentation-state";
 import { type TElement } from "platejs";
 import { useEditorRef } from "platejs/react";
+import { useTranslation } from "react-i18next";
 import { type RootImage as RootImageType } from "../../../utils/parser";
 import { ActionButtons } from "./ActionButtons";
 import { ImagePreview } from "./ImagePreview";
@@ -30,6 +31,7 @@ export function GenerateControls({
   onOpenCrop,
   imageDimensions,
 }: GenerateControlsProps) {
+  const { t } = useTranslation();
   const editor = useEditorRef(slideId);
   const { saveImmediately } = useDebouncedSave();
 
@@ -132,7 +134,7 @@ export function GenerateControls({
               // biome-ignore lint/performance/noImgElement: This is necessary to support different types of thing
               <img
                 src={element.url}
-                alt="Preview"
+                alt={t("presentationEditor.image.previewAlt")}
                 className="h-full w-full object-cover"
               />
             )}

@@ -9,6 +9,7 @@ import { themes as builtInThemes } from "@/lib/presentation/themes";
 import { usePresentationState } from "@/states/presentation-state";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { FontsSection } from "../../controls/global-settings/sections/FontsSection";
 import { ThemeFilter } from "./theme/Filter";
 import { ThemePanelHeader } from "./theme/ThemeHeader";
@@ -19,6 +20,7 @@ import { useThemePanelState } from "./theme/theme-panel-state";
 import { type CustomTheme } from "@/components/notebook/presentation/components/theme/types";
 
 export function ThemePanel() {
+  const { t } = useTranslation();
   const { theme: activeTheme } = usePresentationState();
   const { tab, showFavorites, showFont } = useThemePanelState();
 
@@ -150,8 +152,8 @@ export function ThemePanel() {
           isLoading={isLoadingThemes && !themesForSelector.length}
           emptyMessage={
             showFavorites
-              ? "You have not favorited any themes yet."
-              : "No themes available right now."
+              ? t("themeModal.noFavoriteThemes")
+              : t("themeModal.noThemesAvailable")
           }
         />
       )}

@@ -10,6 +10,7 @@ import {
 } from "@/hooks/presentation/agentTools";
 import { ImageIcon, Loader2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type Scope = "all" | undefined;
 
@@ -26,6 +27,7 @@ export function PresentationReplaceImageCall({
   slideIds?: string[];
   loading?: boolean;
 }) {
+  const { t } = useTranslation();
   const [url, setUrl] = useState(imageUrl ?? "");
   const [prompt, setPrompt] = useState(imagePrompt ?? "");
   const [isEditing, setIsEditing] = useState(false);
@@ -174,7 +176,7 @@ export function PresentationReplaceImageCall({
                   // biome-ignore lint/performance/noImgElement: Dynamic preview in tool message
                   <img
                     src={url}
-                    alt="Preview"
+                    alt={t("presentationEditor.image.previewAlt")}
                     className="h-8 w-8 rounded object-cover"
                   />
                 ) : null}

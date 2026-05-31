@@ -72,16 +72,29 @@ function stripXmlCodeBlock(input: string): string {
   return result;
 }
 
+function stripThinkingContent(input: string): string {
+  return input
+    .replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think\b[^>]*>[\s\S]*$/gi, "")
+    .trim();
+}
+
+function sanitizeGeneratedContent(input: string): string {
+  return stripXmlCodeBlock(stripThinkingContent(stripXmlCodeBlock(input)));
+}
+
 function hasGeneratedOutline(outline: string[]): boolean {
   return outline.some((item) => item.trim().length > 0);
 }
 
 function parseOutlineItems(content: string): string[] {
-  if (!/^#\s+/m.test(content)) {
+  const sanitizedContent = sanitizeGeneratedContent(content);
+
+  if (!/^#\s+/m.test(sanitizedContent)) {
     return [];
   }
 
-  const sections = content.split(/^# /gm).filter(Boolean);
+  const sections = sanitizedContent.split(/^# /gm).filter(Boolean);
   return sections.length > 0
     ? sections.map((section) => `# ${section}`.trim())
     : [];
@@ -136,6 +149,7 @@ export function PresentationGenerationManager() {
 
   // Create a ref for the streaming parser to persist between renders
   const streamingParserRef = useRef<SlideParser>(new SlideParser());
+  const autoRootImageSlideIdsRef = useRef<Set<string>>(new Set());
   // Add refs to track the animation frame IDs
   const slidesRafIdRef = useRef<number | null>(null);
   const outlineRafIdRef = useRef<number | null>(null);
@@ -154,7 +168,7 @@ export function PresentationGenerationManager() {
 
   // Function to update slides using requestAnimationFrame
   const updateSlidesWithRAF = (): void => {
-    const processedPresentationCompletion = stripXmlCodeBlock(
+    const processedPresentationCompletion = sanitizeGeneratedContent(
       presentationCompletion,
     );
     streamingParserRef.current.reset();
@@ -183,13 +197,15 @@ export function PresentationGenerationManager() {
       const slideId = slide.id;
       const rootImage = slide.rootImage;
       if (rootImage?.query && !rootImage.url) {
-        const already = rootImageGeneration[slideId];
+        const already =
+          usePresentationState.getState().rootImageGeneration[slideId];
         if (!already || already.status === "error") {
+          autoRootImageSlideIdsRef.current.add(slideId);
           startRootImageGeneration(slideId, rootImage.query);
         }
       }
     }
-    setSlides(mergedSlides);
+    setSlides(mergedSlides, "history");
     // Debounced save during generation to avoid excessive writes
     save();
     slidesRafIdRef.current = null;
@@ -199,13 +215,16 @@ export function PresentationGenerationManager() {
   const extractTitle = (
     content: string,
   ): { title: string | null; cleanContent: string } => {
-    const titleMatch = content.match(/<TITLE>(.*?)<\/TITLE>/i);
+    const sanitizedContent = sanitizeGeneratedContent(content);
+    const titleMatch = sanitizedContent.match(/<TITLE>(.*?)<\/TITLE>/i);
     if (titleMatch?.[1]) {
       const title = titleMatch[1].trim();
-      const cleanContent = content.replace(/<TITLE>.*?<\/TITLE>/i, "").trim();
+      const cleanContent = sanitizedContent
+        .replace(/<TITLE>.*?<\/TITLE>/i, "")
+        .trim();
       return { title, cleanContent };
     }
-    return { title: null, cleanContent: content };
+    return { title: null, cleanContent: sanitizedContent };
   };
 
   const processMessages = (messages: typeof outlineMessages): void => {
@@ -566,7 +585,9 @@ export function PresentationGenerationManager() {
   useEffect(() => {
     if (imageSlidesCompletion) {
       try {
-        const processedCompletion = stripXmlCodeBlock(imageSlidesCompletion);
+        const processedCompletion = sanitizeGeneratedContent(
+          imageSlidesCompletion,
+        );
         streamingParserRef.current.reset();
         streamingParserRef.current.parseChunk(processedCompletion);
         streamingParserRef.current.finalize();
@@ -594,14 +615,16 @@ export function PresentationGenerationManager() {
           const slideId = slide.id;
           const rootImage = slide.rootImage;
           if (rootImage?.query && !rootImage.url) {
-            const already = rootImageGeneration[slideId];
+            const already =
+              usePresentationState.getState().rootImageGeneration[slideId];
             if (!already || already.status === "error") {
+              autoRootImageSlideIdsRef.current.add(slideId);
               startRootImageGeneration(slideId, rootImage.query);
             }
           }
         }
 
-        setSlides(imageSlidesData);
+        setSlides(imageSlidesData, "history");
         save();
       } catch (error) {
         generationLogger.error("Failed to process image slides XML stream", error, {
@@ -655,6 +678,7 @@ export function PresentationGenerationManager() {
 
       // Reset the parser before starting a new generation
       streamingParserRef.current.reset();
+      autoRootImageSlideIdsRef.current.clear();
       setIsGeneratingPresentation(true);
       setThumbnailUrl(undefined);
       generationLogger.info("Presentation generation started", {
@@ -710,6 +734,7 @@ export function PresentationGenerationManager() {
 
       // Reset the parser before starting a new generation
       streamingParserRef.current.reset();
+      autoRootImageSlideIdsRef.current.clear();
       setIsGeneratingPresentation(true);
       setThumbnailUrl(undefined);
       generationLogger.info("Image slide generation started", {
@@ -808,6 +833,8 @@ export function PresentationGenerationManager() {
               }
 
               if (result?.success && result.image?.url) {
+                const isAutoGenerationImage =
+                  autoRootImageSlideIdsRef.current.has(slideId);
                 generationLogger.info("Root image generation completed", {
                   presentationId: currentPresentationId,
                   slideId,
@@ -830,7 +857,9 @@ export function PresentationGenerationManager() {
                       }
                       : s,
                   ),
+                  isAutoGenerationImage ? "history" : undefined,
                 );
+                autoRootImageSlideIdsRef.current.delete(slideId);
                 save();
               } else {
                 generationLogger.error(
@@ -847,6 +876,7 @@ export function PresentationGenerationManager() {
                   slideId,
                   result?.error ?? "No image url returned",
                 );
+                autoRootImageSlideIdsRef.current.delete(slideId);
               }
             } catch (err) {
               const message =
@@ -857,6 +887,7 @@ export function PresentationGenerationManager() {
                 mode: usesStockSearch ? "stock-search" : "ai-generate",
               });
               failRootImageGeneration(slideId, message);
+              autoRootImageSlideIdsRef.current.delete(slideId);
             }
           })();
         }

@@ -8,6 +8,8 @@ import {
 } from "@/hooks/presentation/useRootImageActions";
 import { cn } from "@/lib/utils";
 import { usePresentationState } from "@/states/presentation-state";
+import { CircleAlert } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ChartRenderer } from "../charts/ChartRenderer";
 import { EmbedRenderer } from "../embeds/EmbedRenderer";
 import ImagePlaceholder from "../image-placeholder";
@@ -18,11 +20,14 @@ export default function RootImageStatic({
   layoutType,
   slideId,
 }: RootImageProps) {
+  const { t } = useTranslation();
   const isSideLayout = layoutType === "left" || layoutType === "right";
   const rootImageGeneration = usePresentationState(
     (s) => s.rootImageGeneration,
   );
   const computedGen = slideId ? rootImageGeneration[slideId] : undefined;
+  const generationError =
+    computedGen?.status === "error" ? computedGen.error : undefined;
   const cropSettings = image.cropSettings || {
     objectFit: "cover" as const,
     objectPosition: { x: 50, y: 50 },
@@ -79,7 +84,9 @@ export default function RootImageStatic({
           <div className="flex h-full flex-col items-center justify-center bg-muted/30 p-4">
             <Spinner className="mb-2 h-8 w-8" />
             <p className="text-sm text-muted-foreground">
-              Generating image for &quot;{image.query}&quot;...
+              {t("presentationEditor.image.generatingFor", {
+                query: image.query,
+              })}
             </p>
           </div>
         ) : image.chartType && image.chartData ? (
@@ -112,6 +119,16 @@ export default function RootImageStatic({
                 alt={image.query}
                 style={imageStyles}
               />
+            ) : generationError ? (
+              <div className="flex h-full flex-col items-center justify-center gap-2 bg-muted/30 p-4 text-center">
+                <CircleAlert className="h-8 w-8 text-destructive" />
+                <p className="text-sm font-medium text-destructive">
+                  {t("presentationEditor.image.generationFailed")}
+                </p>
+                <p className="max-w-md break-words text-xs text-destructive">
+                  {generationError}
+                </p>
+              </div>
             ) : (
               <ImagePlaceholder
                 isStatic={true}

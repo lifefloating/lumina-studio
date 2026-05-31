@@ -11,6 +11,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { Table } from "lucide-react";
 import { KEYS, type TElement } from "platejs";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // Helper function to create a table node with specified dimensions
 const createTableNode = (rows: number, cols: number): TElement => {
@@ -36,6 +37,7 @@ const createTableNode = (rows: number, cols: number): TElement => {
 };
 
 export function TablePanelPopover() {
+  const { t } = useTranslation();
   const [rows, setRows] = useState(0);
   const [cols, setCols] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -77,14 +79,21 @@ export function TablePanelPopover() {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button size="icon" variant="ghost" className="size-12">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="size-12"
+          aria-label={t("presentationEditor.table.insertTable")}
+        >
           <Table className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent side="left" className="w-auto p-4" align="start">
         <div className="flex flex-col gap-2">
           <div className="text-sm font-medium text-muted-foreground">
-            {rows > 0 && cols > 0 ? `${cols}x${rows} Table` : "Insert Table"}
+            {rows > 0 && cols > 0
+              ? t("presentationEditor.table.size", { cols, rows })
+              : t("presentationEditor.table.insertTable")}
           </div>
           <div
             className="grid gap-1"

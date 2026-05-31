@@ -9,8 +9,10 @@ import {
 } from "@/components/ui/select";
 import { usePresentationState } from "@/states/presentation-state";
 import { List } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function PresentationCustomizer() {
+  const { t } = useTranslation();
   const {
     textContent,
     setTextContent,
@@ -23,37 +25,37 @@ export function PresentationCustomizer() {
   } = usePresentationState();
 
   const contentOptions = [
-    { id: "minimal", label: "Minimal", lines: 2 },
-    { id: "concise", label: "Concise", lines: 3 },
-    { id: "detailed", label: "Detailed", lines: 3 },
-    { id: "extensive", label: "Extensive", lines: 3 },
+    { id: "minimal", labelKey: "minimal", lines: 2 },
+    { id: "concise", labelKey: "concise", lines: 3 },
+    { id: "detailed", labelKey: "detailed", lines: 3 },
+    { id: "extensive", labelKey: "extensive", lines: 3 },
   ] as const;
 
   const toneOptions = [
-    { id: "auto", label: "Auto" },
-    { id: "general", label: "General" },
-    { id: "persuasive", label: "Persuasive" },
-    { id: "inspiring", label: "Inspiring" },
-    { id: "instructive", label: "Instructive" },
-    { id: "engaging", label: "Engaging" },
+    { id: "auto", labelKey: "auto" },
+    { id: "general", labelKey: "general" },
+    { id: "persuasive", labelKey: "persuasive" },
+    { id: "inspiring", labelKey: "inspiring" },
+    { id: "instructive", labelKey: "instructive" },
+    { id: "engaging", labelKey: "engaging" },
   ] as const;
 
   const audienceOptions = [
-    { id: "auto", label: "Auto" },
-    { id: "general", label: "General" },
-    { id: "business", label: "Business" },
-    { id: "investor", label: "Investor" },
-    { id: "teacher", label: "Teacher" },
-    { id: "student", label: "Student" },
+    { id: "auto", labelKey: "auto" },
+    { id: "general", labelKey: "general" },
+    { id: "business", labelKey: "business" },
+    { id: "investor", labelKey: "investor" },
+    { id: "teacher", labelKey: "teacher" },
+    { id: "student", labelKey: "student" },
   ] as const;
 
   const scenarioOptions = [
-    { id: "auto", label: "Auto" },
-    { id: "general", label: "General" },
-    { id: "analysis-report", label: "Analysis Report" },
-    { id: "teaching-training", label: "Teaching" },
-    { id: "promotional-materials", label: "Promotional" },
-    { id: "public-speeches", label: "Public Speeches" },
+    { id: "auto", labelKey: "auto" },
+    { id: "general", labelKey: "general" },
+    { id: "analysis-report", labelKey: "analysisReport" },
+    { id: "teaching-training", labelKey: "teaching" },
+    { id: "promotional-materials", labelKey: "promotional" },
+    { id: "public-speeches", labelKey: "publicSpeeches" },
   ] as const;
 
   return (
@@ -63,12 +65,12 @@ export function PresentationCustomizer() {
         <div className="mb-4 flex items-center gap-2">
           <List className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-semibold text-foreground">
-            Text Content
+            {t("presentationEditor.customizer.textContent")}
           </h2>
         </div>
 
         <p className="mb-4 text-sm text-muted-foreground">
-          Amount of text per card
+          {t("presentationEditor.customizer.textContentDescription")}
         </p>
 
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -96,7 +98,9 @@ export function PresentationCustomizer() {
               <span
                 className={`text-sm font-medium ${textContent === option.id ? "text-primary" : "text-foreground"}`}
               >
-                {option.label}
+                {t(
+                  `presentationEditor.customizer.options.${option.labelKey}`,
+                )}
               </span>
             </button>
           ))}
@@ -106,16 +110,20 @@ export function PresentationCustomizer() {
           {/* Tone Select */}
           <div>
             <label className="mb-3 block text-sm font-medium text-foreground">
-              Tone
+              {t("presentationEditor.customizer.tone")}
             </label>
             <Select value={tone} onValueChange={setTone}>
               <SelectTrigger>
-                <SelectValue placeholder="Select tone" />
+                <SelectValue
+                  placeholder={t("presentationEditor.customizer.selectTone")}
+                />
               </SelectTrigger>
               <SelectContent>
                 {toneOptions.map((option) => (
                   <SelectItem key={option.id} value={option.id}>
-                    {option.label}
+                    {t(
+                      `presentationEditor.customizer.options.${option.labelKey}`,
+                    )}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -125,16 +133,22 @@ export function PresentationCustomizer() {
           {/* Audience Select */}
           <div>
             <label className="mb-3 block text-sm font-medium text-foreground">
-              Audience
+              {t("presentationEditor.customizer.audience")}
             </label>
             <Select value={audience} onValueChange={setAudience}>
               <SelectTrigger>
-                <SelectValue placeholder="Select audience" />
+                <SelectValue
+                  placeholder={t(
+                    "presentationEditor.customizer.selectAudience",
+                  )}
+                />
               </SelectTrigger>
               <SelectContent>
                 {audienceOptions.map((option) => (
                   <SelectItem key={option.id} value={option.id}>
-                    {option.label}
+                    {t(
+                      `presentationEditor.customizer.options.${option.labelKey}`,
+                    )}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -144,16 +158,22 @@ export function PresentationCustomizer() {
           {/* Scenario Select */}
           <div>
             <label className="mb-3 block text-sm font-medium text-foreground">
-              Scenario
+              {t("presentationEditor.customizer.scenario")}
             </label>
             <Select value={scenario} onValueChange={setScenario}>
               <SelectTrigger>
-                <SelectValue placeholder="Select scenario" />
+                <SelectValue
+                  placeholder={t(
+                    "presentationEditor.customizer.selectScenario",
+                  )}
+                />
               </SelectTrigger>
               <SelectContent>
                 {scenarioOptions.map((option) => (
                   <SelectItem key={option.id} value={option.id}>
-                    {option.label}
+                    {t(
+                      `presentationEditor.customizer.options.${option.labelKey}`,
+                    )}
                   </SelectItem>
                 ))}
               </SelectContent>

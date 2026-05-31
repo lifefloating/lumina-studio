@@ -337,7 +337,6 @@ export function usePresentationData(id: string, forcedReadOnly = false) {
     const state = usePresentationState.getState();
     const themeData = state.customThemeData;
 
-    console.log(themeData);
     if (themeData?.fonts) {
       const { heading, body, headingUrl, bodyUrl, headingWeight, bodyWeight } =
         themeData.fonts;

@@ -110,11 +110,6 @@ export function PresentationImageEditorPanel() {
     prompt?: string,
     imageSource?: "generate" | "search" | "gif",
   ) => {
-    console.log("[PresentationImageEditorPanel] handleImageSelect:", {
-      url,
-      prompt,
-      imageSource,
-    });
     if (boundUpdateElement) {
       boundUpdateElement({
         url,

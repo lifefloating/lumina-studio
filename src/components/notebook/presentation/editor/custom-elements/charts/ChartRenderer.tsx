@@ -88,7 +88,6 @@ export function ChartRenderer({
   const valueKey = getValueKey(dataArray);
   const config = buildChartConfigOptions(chartOptions as unknown as TChartNode);
 
-  console.log(themeConfig);
   const primaryColor = (chartOptions.color as string) ?? getChartColor(0);
 
   const containerClass = cn(

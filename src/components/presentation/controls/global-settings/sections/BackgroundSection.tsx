@@ -13,7 +13,6 @@ export function BackgroundSection() {
   const updateAllSlides = useUpdateAllSlides();
   const [hexInput, setHexInput] = useState(currentBgColor || "");
 
-  console.log(currentBgColor);
   // To sync input if color is changed outside
   // but simple usage is ok for now - set on color picker change also
   const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {

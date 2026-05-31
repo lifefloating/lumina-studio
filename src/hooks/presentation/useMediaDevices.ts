@@ -43,8 +43,6 @@ export function useMediaDevices() {
           kind: device.kind,
         }));
 
-      console.log("Found video devices:", video);
-      console.log("Found audio devices:", audio);
       setVideoDevices(video);
       setAudioDevices(audio);
     } catch (err) {

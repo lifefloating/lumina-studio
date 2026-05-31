@@ -29,16 +29,8 @@ import { toast } from "sonner";
 
 const MODEL_OPTIONS = [
   {
-    label: "Flux 2 Flash",
-    value: "fal-ai/flux-2/flash",
-  },
-  {
-    label: "Flux Dev",
-    value: "fal-ai/flux/dev",
-  },
-  {
-    label: "Flux 2 Pro",
-    value: "fal-ai/flux-2-pro",
+    label: "GPT Image 2",
+    value: "gpt-image2",
   },
 ];
 
@@ -53,9 +45,8 @@ export function GenerateImageDialogContent({
 }) {
   const editor = useEditorRef();
   const [prompt, setPrompt] = useState("");
-  const [selectedModel, setSelectedModel] = useState<ImageModelList>(
-    "fal-ai/flux-2/flash",
-  );
+  const [selectedModel, setSelectedModel] =
+    useState<ImageModelList>("gpt-image2");
 
   const generateImage = async () => {
     if (!prompt.trim()) {

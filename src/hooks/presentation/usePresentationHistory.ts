@@ -26,10 +26,6 @@ export function usePresentationHistory() {
   const clearHistory = usePresentationHistoryState((s) => s.clearHistory);
   const history = usePresentationHistoryState((s) => s.history);
 
-  useEffect(() => {
-    console.log("history", history);
-  }, [history]);
-
   const hasInitializedRef = useRef(false);
 
   // Initialize history when slides are first loaded (after generation completes)

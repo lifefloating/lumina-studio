@@ -1,3 +1,6 @@
+/** biome-ignore-all lint/performance/noImgElement: This is a valid use case */
+"use client";
+
 import type * as React from "react";
 
 import LiteYouTubeEmbed from "react-lite-youtube-embed";
@@ -9,6 +12,7 @@ import { SlateElement, type SlateElementProps } from "platejs/static";
 import { embedTypeConfig } from "@/components/plate/ui/media-embeds";
 import { cn } from "@/lib/utils";
 import { Video } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // Extended properties for media embed elements
 interface MediaEmbedProps {
@@ -26,6 +30,7 @@ function MediaEmbedPlaceholderStatic({
   embedType: string;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const config =
     embedTypeConfig[embedType as keyof typeof embedTypeConfig] ||
     embedTypeConfig.youtube;
@@ -44,9 +49,13 @@ function MediaEmbedPlaceholderStatic({
           </div>
           <div className="text-center">
             <h3 className="text-lg font-semibold text-muted-foreground">
-              {config?.name || "Media Embed"}
+              {t(`presentationEditor.mediaEmbeds.${embedType}.label`, {
+                defaultValue: config?.name || "Media Embed",
+              })}
             </h3>
-            <p className="text-sm text-muted-foreground">No URL provided</p>
+            <p className="text-sm text-muted-foreground">
+              {t("presentationEditor.image.noUrlProvided")}
+            </p>
           </div>
         </div>
       </div>
@@ -58,6 +67,7 @@ function MediaEmbedPlaceholderStatic({
 export function MediaEmbedElementStatic(
   props: SlateElementProps<TMediaEmbedElement & MediaEmbedProps>,
 ) {
+  const { t } = useTranslation();
   const element = props.element;
 
   const align = element.align || "center";
@@ -142,10 +152,9 @@ export function MediaEmbedElementStatic(
               </div>
             ) : provider === "image" ? (
               // Image embed - display as img with proper sizing
-              // biome-ignore lint/performance/noImgElement: This is necessary to support different image URL formats
               <img
                 src={url}
-                alt="Embedded image"
+                alt={t("presentationEditor.image.embeddedImageAlt")}
                 className="h-auto w-full rounded-sm object-contain"
               />
             ) : (
@@ -167,5 +176,3 @@ export function MediaEmbedElementStatic(
     </SlateElement>
   );
 }
-
-

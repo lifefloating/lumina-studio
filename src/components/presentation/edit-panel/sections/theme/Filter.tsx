@@ -8,11 +8,13 @@ import { usePresentationState } from "@/states/presentation-state";
 import { Loader2, Settings2, Type, Upload } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 export function ThemeFilter() {
+  const { t } = useTranslation();
   const {
     setShowFont,
     showFont,
@@ -74,7 +76,7 @@ export function ThemeFilter() {
 
     // Use the built-in theme name if available, otherwise use the theme ID
     // This prevents using potentially corrupted names from customThemeData
-    const themeName = builtInTheme?.name || theme || "Custom Theme";
+    const themeName = builtInTheme?.name || theme || t("themeModal.customTheme");
 
     // Set editing theme with current theme data, but mark as customizing
     const customizing = {
@@ -102,7 +104,7 @@ export function ThemeFilter() {
         type="button"
       >
         <Settings2 className="h-4 w-4 text-foreground" />
-        <span className="text-foreground">Customize</span>
+        <span className="text-foreground">{t("themeModal.customize")}</span>
       </button>
 
       {/* Font Button */}
@@ -115,7 +117,7 @@ export function ThemeFilter() {
         type="button"
       >
         <Type className="h-4 w-4 text-foreground" />
-        <span className="text-foreground">Font</span>
+        <span className="text-foreground">{t("themeModal.font")}</span>
       </button>
 
       {/* Import Button */}
@@ -126,7 +128,7 @@ export function ThemeFilter() {
           "flex items-center justify-center gap-2 rounded-lg border border-border px-3 py-2 text-sm transition-colors hover:bg-muted",
           isImporting && "cursor-not-allowed opacity-60",
         )}
-        title="Import Theme from PPTX"
+        title={t("themeModal.importFromPptx")}
         type="button"
       >
         {isImporting ? (
@@ -135,7 +137,7 @@ export function ThemeFilter() {
           <Upload className="h-4 w-4 text-foreground" />
         )}
         <span className="text-foreground">
-          {isImporting ? "Importing..." : "Import"}
+          {isImporting ? t("themeModal.importing") : t("themeModal.import")}
         </span>
       </button>
     </div>
