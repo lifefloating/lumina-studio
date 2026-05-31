@@ -14,6 +14,16 @@ const LM_STUDIO_MODELS_URLS = [
   `${LM_STUDIO_BASE_URL}/api/v0/models`,
 ] as const;
 
+function normalizeOpenAICompatibleBaseUrl(baseUrl: string): string {
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+
+  if (normalizedBaseUrl.endsWith("/v1")) {
+    return normalizedBaseUrl;
+  }
+
+  return `${normalizedBaseUrl}/v1`;
+}
+
 interface OllamaTagsResponse {
   models?: Array<{ name?: string }>;
 }
@@ -377,15 +387,27 @@ export function modelPicker(modelProviderOrModel: string, modelId?: string) {
 
   const selectedOpenAIModel = selection.modelId || "gpt-4o-mini";
   const openAIApiKey = env.OPENAI_API_KEY?.trim();
+  const openAIBaseUrl = env.OPENAI_BASE_URL?.trim();
+  const normalizedOpenAIBaseUrl = openAIBaseUrl
+    ? normalizeOpenAICompatibleBaseUrl(openAIBaseUrl)
+    : undefined;
 
   modelLogger.info("Creating OpenAI model client", {
     provider: selection.provider,
     modelId: selectedOpenAIModel,
     hasApiKey: Boolean(openAIApiKey),
+    baseUrl: normalizedOpenAIBaseUrl,
   });
 
   return new ChatOpenAI({
     model: selectedOpenAIModel,
     ...(openAIApiKey ? { apiKey: openAIApiKey } : {}),
+    ...(normalizedOpenAIBaseUrl
+      ? {
+          configuration: {
+            baseURL: normalizedOpenAIBaseUrl,
+          },
+        }
+      : {}),
   });
 }

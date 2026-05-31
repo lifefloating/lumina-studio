@@ -157,7 +157,7 @@ export function Header() {
 
               {/* Settings row — labeled selects + toggle */}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <ModelPicker />
+                <ModelPicker className="sm:col-span-2 xl:col-span-4" />
 
                 {/* Number of slides */}
                 <div className="space-y-1.5">

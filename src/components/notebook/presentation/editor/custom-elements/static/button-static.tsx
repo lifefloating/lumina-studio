@@ -64,10 +64,11 @@ export default function ButtonStatic(
 
   return (
     <SlateElement
+      as="span"
       {...props}
       className={cn("transition-all duration-300", props.className)}
     >
-      <div
+      <span
         className={cn(
           "presentation-element",
           commonClasses,
@@ -77,8 +78,7 @@ export default function ButtonStatic(
         style={style}
       >
         {props.children}
-      </div>
+      </span>
     </SlateElement>
   );
 }
-

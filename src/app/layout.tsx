@@ -25,7 +25,7 @@ export default async function RootLayout({
   const initialLocale = normalizeLocale(cookieStore.get(LOCALE_COOKIE)?.value);
 
   return (
-    <html lang={initialLocale}>
+    <html lang={initialLocale} suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
         <TanStackQueryProvider>
           <NextAuthProvider>

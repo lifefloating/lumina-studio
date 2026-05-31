@@ -1,7 +1,7 @@
 "use client";
 
-import { createBlankPresentation } from "@/app/_actions/notebook/presentation/presentationActions";
 import { fetchPresentations } from "@/app/_actions/notebook/presentation/fetchPresentations";
+import { createBlankPresentation } from "@/app/_actions/notebook/presentation/presentationActions";
 import { ModelPicker } from "@/components/notebook/presentation/components/ModelPicker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,15 @@ import { usePresentationState } from "@/states/presentation-state";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { enUS, zhCN } from "date-fns/locale";
-import { FilePlus2, Globe, Loader2, Presentation, Sparkles } from "lucide-react";
+import {
+  FilePlus2,
+  Globe,
+  Layers,
+  Loader2,
+  Presentation,
+  Search,
+  Sparkles,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -121,32 +129,35 @@ export function PresentationDashboard() {
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-        <Card className="border-border/60 bg-background/70 shadow-xs">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Sparkles className="h-6 w-6 text-primary" />
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.75fr)]">
+        <Card className="overflow-hidden border-border/60 bg-background shadow-xs">
+          <CardHeader className="border-b border-border/60 px-5 py-4 sm:px-6">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Sparkles className="size-5 text-primary" />
               {t("dashboard.createTitle")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-5 p-5 sm:p-6">
             <Textarea
               value={presentationInput}
               onChange={(event) => setPresentationInput(event.target.value)}
               placeholder={t("dashboard.promptPlaceholder")}
-              className="min-h-36 resize-none"
+              className="min-h-44 resize-none rounded-lg border-border/70 bg-muted/20 px-4 py-3 text-base shadow-none focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:ring-offset-0"
             />
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.72fr)_minmax(0,0.9fr)_minmax(0,1.04fr)]">
               <ModelPicker />
 
-              <div className="space-y-2">
-                <div className="text-sm font-medium">{t("dashboard.slides")}</div>
+              <div className="min-w-0 space-y-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Layers className="size-3.5" />
+                  {t("dashboard.slides")}
+                </label>
                 <Select
                   value={String(numSlides)}
                   onValueChange={(value) => setNumSlides(Number(value))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 rounded-lg bg-background shadow-none">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -159,12 +170,13 @@ export function PresentationDashboard() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <div className="text-sm font-medium">
+              <div className="min-w-0 space-y-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Globe className="size-3.5" />
                   {t("dashboard.language")}
-                </div>
+                </label>
                 <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 rounded-lg bg-background shadow-none">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -177,18 +189,22 @@ export function PresentationDashboard() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <div className="text-sm font-medium">
+              <div className="min-w-0 space-y-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <Search className="size-3.5" />
                   {t("dashboard.webSearch")}
-                </div>
-                <div className="flex h-10 items-center justify-between rounded-md border px-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Globe className="h-4 w-4" />
-                    {webSearchEnabled
-                      ? t("dashboard.webSearchEnabled")
-                      : t("dashboard.webSearchDisabled")}
+                </label>
+                <div className="flex h-10 min-w-0 items-center justify-between gap-3 rounded-lg border border-input bg-background px-3">
+                  <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                    <Globe className="size-4 shrink-0 text-muted-foreground" />
+                    <span className="truncate">
+                      {webSearchEnabled
+                        ? t("dashboard.webSearchEnabled")
+                        : t("dashboard.webSearchDisabled")}
+                    </span>
                   </div>
                   <Switch
+                    aria-label={t("dashboard.webSearch")}
                     checked={webSearchEnabled}
                     onCheckedChange={setWebSearchEnabled}
                   />
@@ -196,10 +212,11 @@ export function PresentationDashboard() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col gap-3 border-t border-border/60 pt-5 sm:flex-row sm:items-center sm:justify-between">
               <Button
                 onClick={() => void createPresentation()}
                 disabled={isCreating || !presentationInput.trim()}
+                className="h-10 px-4 sm:min-w-36"
               >
                 {isCreating ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -212,6 +229,7 @@ export function PresentationDashboard() {
                 variant="outline"
                 onClick={() => void createBlank()}
                 disabled={isCreating}
+                className="h-10 px-4 sm:min-w-36"
               >
                 <FilePlus2 className="mr-2 h-4 w-4" />
                 {t("dashboard.blankPresentation")}
@@ -220,14 +238,14 @@ export function PresentationDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/60 bg-background/70 shadow-xs">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Presentation className="h-5 w-5 text-primary" />
+        <Card className="border-border/60 bg-background shadow-xs">
+          <CardHeader className="border-b border-border/60 px-5 py-4 sm:px-6">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Presentation className="size-5 text-primary" />
               {t("dashboard.recentTitle")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 p-5 sm:p-6">
             {isLoading ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -243,7 +261,7 @@ export function PresentationDashboard() {
                   key={item.id}
                   type="button"
                   onClick={() => router.push(`/presentation/${item.id}`)}
-                  className="flex w-full flex-col rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
+                  className="flex w-full flex-col rounded-lg border border-border/70 p-3 text-left transition-colors hover:bg-muted/50"
                 >
                   <span className="font-medium">
                     {item.title || t("common.untitledPresentation")}

@@ -1,8 +1,10 @@
 import { env } from "@/env";
+import { credentialsSignInSchema, verifyPassword } from "@/server/password-auth";
 import { db } from "@/server/db";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth, { type DefaultSession, type Session } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
+import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -17,6 +19,7 @@ declare module "next-auth" {
 
   interface User {
     hasAccess: boolean;
+    location?: string | null;
     role: string;
   }
 }
@@ -34,7 +37,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         token.name = user.name;
         token.image = user.image;
         token.picture = user.image;
-        token.location = (user as Session["user"]).location;
+        token.location = user.location;
         token.role = user.role;
         token.isAdmin = user.role === "ADMIN";
       }
@@ -92,6 +95,55 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
   adapter: PrismaAdapter(db) as Adapter,
   providers: [
+    CredentialsProvider({
+      name: "Email",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const parsed = credentialsSignInSchema.safeParse(credentials);
+
+        if (!parsed.success) {
+          return null;
+        }
+
+        const { email, password } = parsed.data;
+        const user = await db.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            password: true,
+            hasAccess: true,
+            location: true,
+            role: true,
+          },
+        });
+
+        if (!user?.password) {
+          return null;
+        }
+
+        const isValidPassword = await verifyPassword(password, user.password);
+
+        if (!isValidPassword) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          hasAccess: user.hasAccess,
+          location: user.location,
+          role: user.role,
+        };
+      },
+    }),
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,

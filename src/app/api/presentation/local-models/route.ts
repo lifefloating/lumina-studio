@@ -73,7 +73,7 @@ async function fetchOllamaModels(): Promise<LocalModelInfo[]> {
         provider: "ollama" as const,
       }));
   } catch (error) {
-    routeLogger.warn("Failed to fetch Ollama models", {
+    routeLogger.info("Ollama model service is not available", {
       error: error instanceof Error ? error.message : String(error),
     });
     return [];
@@ -115,7 +115,7 @@ async function fetchLMStudioModels(): Promise<LocalModelInfo[]> {
       return dedupeModels(models);
     }
   } catch (error) {
-    routeLogger.warn("Failed to fetch LM Studio native model list", {
+    routeLogger.info("LM Studio native model service is not available", {
       error: error instanceof Error ? error.message : String(error),
     });
   }
@@ -142,7 +142,7 @@ async function fetchLMStudioModels(): Promise<LocalModelInfo[]> {
         })),
     );
   } catch (error) {
-    routeLogger.warn("Failed to fetch LM Studio OpenAI-compatible model list", {
+    routeLogger.info("LM Studio OpenAI-compatible model service is not available", {
       error: error instanceof Error ? error.message : String(error),
     });
     return [];

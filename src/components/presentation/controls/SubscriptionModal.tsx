@@ -1,7 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { CheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -56,6 +62,10 @@ export function SubscriptionModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="z-100 max-w-6xl gap-0 p-0">
+        <VisuallyHidden>
+          <DialogTitle>{t("subscription.title")}</DialogTitle>
+          <DialogDescription>{t("subscription.choosePlan")}</DialogDescription>
+        </VisuallyHidden>
         <div className="border-b px-8 pt-8 pb-6">
           <h2 className="text-3xl font-semibold tracking-tight">
             {t("subscription.title")}

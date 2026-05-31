@@ -7,11 +7,12 @@ import { useEffect, useState } from "react";
 interface ModelInfo {
   id: string;
   name: string;
-  provider: "ollama" | "lmstudio";
+  provider: "openai" | "ollama" | "lmstudio";
 }
 
 const localModelLogger = createLogger("client:local-models");
 const LOCAL_MODELS_API_URL = "/api/presentation/local-models";
+const OPENAI_MODELS_API_URL = "/api/presentation/openai-models";
 
 function mergeModels(...groups: ModelInfo[][]): ModelInfo[] {
   const merged: ModelInfo[] = [];
@@ -55,6 +56,10 @@ interface LocalModelsApiResponse {
   models?: ModelInfo[];
 }
 
+interface OpenAIModelsApiResponse {
+  models?: ModelInfo[];
+}
+
 async function fetchLocalModels(): Promise<ModelInfo[]> {
   try {
     const response = await fetch(LOCAL_MODELS_API_URL, {
@@ -73,12 +78,7 @@ async function fetchLocalModels(): Promise<ModelInfo[]> {
     });
 
     if (models.length === 0) {
-      localModelLogger.warn(
-        "No live local models detected; falling back to downloadable Ollama suggestions",
-        {
-          downloadableModels: downloadableModels.map((model) => model.name),
-        },
-      );
+      localModelLogger.warn("No live local models detected");
     }
 
     return models;
@@ -90,60 +90,28 @@ async function fetchLocalModels(): Promise<ModelInfo[]> {
   }
 }
 
-export const downloadableModels: ModelInfo[] = [
-  {
-    id: "ollama-llama3.1:8b",
-    name: "llama3.1:8b",
-    provider: "ollama",
-  },
-  {
-    id: "ollama-llama3.1:70b",
-    name: "llama3.1:70b",
-    provider: "ollama",
-  },
-  {
-    id: "ollama-llama3.2:3b",
-    name: "llama3.2:3b",
-    provider: "ollama",
-  },
-  {
-    id: "ollama-llama3.2:8b",
-    name: "llama3.2:8b",
-    provider: "ollama",
-  },
-  {
-    id: "ollama-mistral:7b",
-    name: "mistral:7b",
-    provider: "ollama",
-  },
-  {
-    id: "ollama-codellama:7b",
-    name: "codellama:7b",
-    provider: "ollama",
-  },
-  {
-    id: "ollama-qwen2.5:7b",
-    name: "qwen2.5:7b",
-    provider: "ollama",
-  },
-  {
-    id: "ollama-gemma2:9b",
-    name: "gemma2:9b",
-    provider: "ollama",
-  },
-  {
-    id: "ollama-phi3:3.8b",
-    name: "phi3:3.8b",
-    provider: "ollama",
-  },
-  {
-    id: "ollama-neural-chat:7b",
-    name: "neural-chat:7b",
-    provider: "ollama",
-  },
-];
+async function fetchOpenAIModels(): Promise<ModelInfo[]> {
+  const response = await fetch(OPENAI_MODELS_API_URL, {
+    cache: "no-store",
+  });
 
-export const fallbackModels: ModelInfo[] = downloadableModels;
+  if (!response.ok) {
+    throw new Error(`OpenAI models API responded with ${response.status}`);
+  }
+
+  const data = (await response.json()) as OpenAIModelsApiResponse;
+  const models = Array.isArray(data.models) ? data.models : [];
+
+  localModelLogger.info("OpenAI-compatible model discovery completed", {
+    total: models.length,
+  });
+
+  return models.filter((model) => model.provider === "openai");
+}
+
+export const downloadableModels: ModelInfo[] = [];
+
+export const fallbackModels: ModelInfo[] = [];
 
 const MODELS_CACHE_KEY = "presentation-models-cache";
 const SELECTED_MODEL_KEY = "presentation-selected-model";
@@ -263,8 +231,8 @@ export function useLocalModels() {
 
       return {
         localModels,
-        downloadableModels,
-        showDownloadable: downloadableModels.length > 0,
+        downloadableModels: [],
+        showDownloadable: false,
       };
     },
   });
@@ -279,4 +247,14 @@ export function useLocalModels() {
     ...query,
     isInitialLoad,
   };
+}
+
+export function useOpenAIModels() {
+  return useQuery({
+    queryKey: ["openai-models"],
+    queryFn: fetchOpenAIModels,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+    retryDelay: 1000,
+  });
 }
