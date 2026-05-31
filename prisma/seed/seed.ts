@@ -386,9 +386,9 @@ export const themes = {
     },
   },
 
-  // ==================== ALLWEONE / NEON ====================
-  allweoneLight: {
-    name: "Allweone",
+  // ==================== Lumina / NEON ====================
+  luminaLight: {
+    name: "Lumina",
     description: "Clean and high contrast",
     mode: "light",
     colors: {
@@ -424,8 +424,8 @@ export const themes = {
     },
   },
 
-  allweoneDark: {
-    name: "Allweone",
+  luminaDark: {
+    name: "Lumina",
     description: "Cyberpunk glow",
     mode: "dark",
     colors: {
@@ -1337,12 +1337,12 @@ export const themes = {
 
 async function main() {
   const systemUser = await prisma.user.upsert({
-    where: { email: "system@allweone.com" },
+    where: { email: "system@lumina-studio.local" },
     update: {},
     create: {
       id: "0",
-      email: "system@allweone.com",
-      name: "ALLWEONE System",
+      email: "system@lumina-studio.local",
+      name: "Lumina System",
     },
   });
 

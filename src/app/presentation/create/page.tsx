@@ -6,6 +6,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { useTheme } from "next-themes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 function getSlideCount(value: string | null): number {
@@ -18,6 +19,7 @@ function getSlideCount(value: string | null): number {
 }
 
 export default function Page() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const params = useSearchParams();
@@ -47,7 +49,7 @@ export default function Page() {
 
       // Create empty presentation
       const result = await createEmptyPresentation({
-        title: promptText.substring(0, 50) || "Untitled Presentation",
+        title: promptText.substring(0, 50) || t("generation.untitledTitle"),
         theme: createTheme,
         language: lang,
       });
@@ -64,13 +66,13 @@ export default function Page() {
         router.replace(`/presentation/generate/${result.presentation.id}`);
       } else {
         setIsGeneratingOutline(false);
-        toast.error(result.message || "Failed to create presentation");
+        toast.error(result.message || t("generation.createFailed"));
         router.push("/presentations");
       }
     } catch (error) {
       setIsGeneratingOutline(false);
       console.error("Error creating presentation:", error);
-      toast.error("Failed to create presentation");
+      toast.error(t("generation.createFailed"));
       router.push("/presentations");
     }
   };
@@ -134,8 +136,12 @@ export default function Page() {
             <Spinner className="h-10 w-10 text-primary" />
           </div>
           <div className="space-y-2 text-center">
-            <h2 className="text-2xl font-bold">Loading Presentation Outline</h2>
-            <p className="text-muted-foreground">Please wait a moment...</p>
+            <h2 className="text-2xl font-bold">
+              {t("generation.loadingOutline")}
+            </h2>
+            <p className="text-muted-foreground">
+              {t("generation.pleaseWait")}
+            </p>
           </div>
         </div>
       </ThemeBackground>

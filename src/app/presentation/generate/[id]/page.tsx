@@ -28,6 +28,7 @@ import { Wand2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { useLayoutEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 // Cookie name for presentation generation
@@ -35,6 +36,7 @@ import { toast } from "sonner";
 import { GenerateImageSlidesButton } from "@/components/notebook/presentation/components/outline/GenerateImageSlidesButton";
 
 export default function PresentationGenerateWithIdPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -72,12 +74,12 @@ export default function PresentationGenerateWithIdPage() {
   const isGeneratePresentationDisabled =
     isGeneratingPresentation || isGeneratingOutline;
   const generatePresentationButtonLabel = isGeneratingOutline
-    ? "Generating Outline..."
+    ? t("generation.generatingOutline")
     : isGeneratingPresentation
-      ? "Generating Presentation..."
+      ? t("generation.generatingPresentation")
       : hasOutline
-        ? "Generate Presentation"
-        : "Generate Outline";
+        ? t("generation.generatePresentation")
+        : t("generation.generateOutline");
 
   // Use React Query to fetch presentation data
   const { data: presentationData, isLoading: isLoadingPresentation } = useQuery(
@@ -259,7 +261,7 @@ export default function PresentationGenerateWithIdPage() {
     }
 
     if (!hasOutline) {
-      toast.error("Generate an outline before generating image slides.");
+      toast.error(t("generation.generateImageSlidesFirst"));
       return;
     }
 
@@ -278,8 +280,12 @@ export default function PresentationGenerateWithIdPage() {
             <Spinner className="h-10 w-10 text-primary" />
           </div>
           <div className="space-y-2 text-center">
-            <h2 className="text-2xl font-bold">Loading Presentation Outline</h2>
-            <p className="text-muted-foreground">Please wait a moment...</p>
+            <h2 className="text-2xl font-bold">
+              {t("generation.loadingOutline")}
+            </h2>
+            <p className="text-muted-foreground">
+              {t("generation.pleaseWait")}
+            </p>
           </div>
         </div>
       </ThemeBackground>

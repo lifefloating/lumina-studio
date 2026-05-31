@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface ThemeModalTabsProps {
   activeTab: "standard" | "public";
@@ -11,6 +12,8 @@ export function ThemeModalTabs({
   activeTab,
   onTabChange,
 }: ThemeModalTabsProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="px-4 pt-4">
       <div className="flex gap-1 rounded-lg bg-muted p-1">
@@ -23,7 +26,7 @@ export function ThemeModalTabs({
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          ALLWEONE
+          {t("themeModal.lumina")}
         </button>
         <button
           onClick={() => onTabChange("public")}
@@ -34,7 +37,7 @@ export function ThemeModalTabs({
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          Public
+          {t("themeModal.public")}
         </button>
       </div>
     </div>

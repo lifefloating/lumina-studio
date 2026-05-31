@@ -19,6 +19,7 @@ import {
 } from "@dnd-kit/sortable";
 import { LayoutGrid, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TEMPLATE_DEFINITIONS } from "../../utils/templates";
 import { OutlineItem } from "./OutlineItem";
 import { OutlineTemplateModal } from "./OutlineTemplateModal";
@@ -40,6 +41,7 @@ function areItemTitlesEqual(
 }
 
 export function OutlineList() {
+  const { t } = useTranslation();
   const {
     outline: initialItems,
     setOutline,
@@ -118,7 +120,7 @@ export function OutlineList() {
 
   const handleAddCard = () => {
     const newId = crypto.randomUUID();
-    const newItems = [...items, { id: newId, title: "New Card" }];
+    const newItems = [...items, { id: newId, title: t("outline.addCard") }];
     setItems(newItems);
     // Update the outline in the store
     setOutline(newItems.map((item) => item.title));
@@ -196,11 +198,11 @@ export function OutlineList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm text-foreground">Outline</h2>
+        <h2 className="text-sm text-foreground">{t("outline.title")}</h2>
         <div className="flex items-center gap-2">
           {isGeneratingOutline && items.length > 0 && (
             <span className="animate-pulse text-xs text-muted-foreground">
-              Generating...
+              {t("outline.generating")}
             </span>
           )}
           <Button
@@ -213,7 +215,7 @@ export function OutlineList() {
             className="h-7 gap-1.5 px-2 text-xs"
           >
             <LayoutGrid className="h-3.5 w-3.5" />
-            Layouts
+            {t("outline.layouts")}
             {selectedSlideTemplates.length > 0 && (
               <Badge
                 variant="secondary"
@@ -234,11 +236,11 @@ export function OutlineList() {
         className="flex w-full items-center justify-center gap-2 rounded-md bg-muted/50 py-3 text-muted-foreground transition-colors hover:bg-muted disabled:opacity-50"
       >
         <Plus size={20} />
-        Add card
+        {t("outline.addCard")}
       </button>
 
       <div className="flex justify-between text-sm text-muted-foreground">
-        <span>{items.length} cards total</span>
+        <span>{t("outline.cardCount", { count: items.length })}</span>
         <span>
           {items.reduce((acc, item) => acc + item.title.length, 0)}/20000
         </span>

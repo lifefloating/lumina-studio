@@ -14,6 +14,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { motion } from "motion/react";
 import { ChevronRight, LayoutGrid, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { type PlateSlide } from "../../utils/parser";
 import {
   TEMPLATE_CATEGORIES,
@@ -55,6 +56,7 @@ export function SlideTemplateModal({
   onClose,
   slideId,
 }: SlideTemplateModalProps) {
+  const { t } = useTranslation();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -120,7 +122,7 @@ export function SlideTemplateModal({
                 <Menu className="h-4 w-4" />
               </Button>
             )}
-            <CredenzaTitle>Select a layout</CredenzaTitle>
+            <CredenzaTitle>{t("outline.selectLayout")}</CredenzaTitle>
           </div>
           <Button
             onClick={onClose}
@@ -148,7 +150,7 @@ export function SlideTemplateModal({
                     )}
                   >
                     <LayoutGrid className="h-4 w-4" />
-                    <span>All Layouts</span>
+                    <span>{t("outline.allLayouts")}</span>
                   </button>
                   {TEMPLATE_CATEGORIES.map((category) => (
                     <button
@@ -209,7 +211,7 @@ export function SlideTemplateModal({
                   )}
                 >
                   <LayoutGrid className="h-4 w-4" />
-                  <span>All Layouts</span>
+                  <span>{t("outline.allLayouts")}</span>
                 </button>
                 {TEMPLATE_CATEGORIES.map((category) => (
                   <button

@@ -2,9 +2,11 @@
 
 import { ThemeBackground } from "@/components/notebook/presentation/components/theme/ThemeBackground";
 import { Spinner } from "@/components/ui/spinner";
+import { useTranslation } from "react-i18next";
 import { usePresentationTheme } from "../providers/PresentationThemeProvider";
 
 export function LoadingState() {
+  const { t } = useTranslation();
   const { resolvedTheme } = usePresentationTheme();
   return (
     <ThemeBackground
@@ -15,8 +17,12 @@ export function LoadingState() {
           <Spinner className="h-10 w-10 text-primary" />
         </div>
         <div className="space-y-2 text-center">
-          <h2 className="text-2xl font-bold">Loading Presentation</h2>
-          <p className="text-muted-foreground">Getting your slides ready...</p>
+          <h2 className="text-2xl font-bold">
+            {t("loadingState.presentation")}
+          </h2>
+          <p className="text-muted-foreground">
+            {t("loadingState.slidesReady")}
+          </p>
         </div>
       </div>
     </ThemeBackground>

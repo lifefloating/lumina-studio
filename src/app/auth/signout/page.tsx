@@ -10,8 +10,10 @@ import {
 } from "@/components/ui/card";
 import { signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
 export default function SignOut() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
@@ -25,17 +27,21 @@ export default function SignOut() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-slate-900">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Sign Out</CardTitle>
-          <CardDescription>Are you sure you want to sign out?</CardDescription>
+          <CardTitle className="text-2xl font-bold">
+            {t("auth.signOutTitle")}
+          </CardTitle>
+          <CardDescription>{t("auth.signOutConfirm")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="flex flex-col space-y-4">
-            <Button onClick={handleSignOut}>Yes, sign me out</Button>
+            <Button onClick={handleSignOut}>
+              {t("auth.signOutWithProvider")}
+            </Button>
             <Button variant="outline" onClick={handleCancel}>
-              No, take me back
+              {t("auth.cancelSignOut")}
             </Button>
           </div>
         </CardContent>

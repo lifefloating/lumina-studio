@@ -14,33 +14,22 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { GENERATION_LANGUAGE_OPTIONS } from "@/lib/i18n/resources";
 import { usePresentationState } from "@/states/presentation-state";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
+import { enUS, zhCN } from "date-fns/locale";
 import { FilePlus2, Globe, Loader2, Presentation, Sparkles } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-
-const LANGUAGES = [
-  ["en-US", "English"],
-  ["pt", "Portuguese"],
-  ["es", "Spanish"],
-  ["fr", "French"],
-  ["de", "German"],
-  ["it", "Italian"],
-  ["ja", "Japanese"],
-  ["ko", "Korean"],
-  ["zh", "Chinese"],
-  ["ru", "Russian"],
-  ["hi", "Hindi"],
-  ["ar", "Arabic"],
-] as const;
 
 export function PresentationDashboard() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
+  const { i18n, t } = useTranslation();
   const [isCreating, setIsCreating] = useState(false);
   const {
     presentationInput,
@@ -65,6 +54,7 @@ export function PresentationDashboard() {
   });
 
   const items = data?.items ?? [];
+  const dateLocale = i18n.resolvedLanguage?.startsWith("zh") ? zhCN : enUS;
   const slidesOptions = useMemo(
     () => Array.from({ length: 12 }, (_, index) => `${index + 1}`),
     [],
@@ -90,7 +80,7 @@ export function PresentationDashboard() {
       router.push("/presentation/create");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to create presentation");
+      toast.error(t("dashboard.toastCreateFailed"));
     } finally {
       setIsCreating(false);
     }
@@ -102,7 +92,7 @@ export function PresentationDashboard() {
     }
 
     setIsCreating(true);
-    const title = presentationInput.trim() || "Blank presentation";
+    const title = presentationInput.trim() || t("dashboard.blankPresentation");
     const selectedLanguage = language;
 
     try {
@@ -114,7 +104,7 @@ export function PresentationDashboard() {
       );
 
       if (!result.success || !result.presentation) {
-        toast.error(result.message ?? "Failed to create presentation");
+        toast.error(result.message ?? t("dashboard.toastCreateFailed"));
         return;
       }
 
@@ -123,7 +113,7 @@ export function PresentationDashboard() {
       router.replace(`/presentation/${result.presentation.id}`);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to create presentation");
+      toast.error(t("dashboard.toastCreateFailed"));
     } finally {
       setIsCreating(false);
     }
@@ -136,14 +126,14 @@ export function PresentationDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-2xl">
               <Sparkles className="h-6 w-6 text-primary" />
-              Create a presentation
+              {t("dashboard.createTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <Textarea
               value={presentationInput}
               onChange={(event) => setPresentationInput(event.target.value)}
-              placeholder="Describe the presentation you want to build."
+              placeholder={t("dashboard.promptPlaceholder")}
               className="min-h-36 resize-none"
             />
 
@@ -151,7 +141,7 @@ export function PresentationDashboard() {
               <ModelPicker />
 
               <div className="space-y-2">
-                <div className="text-sm font-medium">Slides</div>
+                <div className="text-sm font-medium">{t("dashboard.slides")}</div>
                 <Select
                   value={String(numSlides)}
                   onValueChange={(value) => setNumSlides(Number(value))}
@@ -170,15 +160,17 @@ export function PresentationDashboard() {
               </div>
 
               <div className="space-y-2">
-                <div className="text-sm font-medium">Language</div>
+                <div className="text-sm font-medium">
+                  {t("dashboard.language")}
+                </div>
                 <Select value={language} onValueChange={setLanguage}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {LANGUAGES.map(([value, label]) => (
+                    {GENERATION_LANGUAGE_OPTIONS.map(([value, labelKey]) => (
                       <SelectItem key={value} value={value}>
-                        {label}
+                        {t(labelKey)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -186,11 +178,15 @@ export function PresentationDashboard() {
               </div>
 
               <div className="space-y-2">
-                <div className="text-sm font-medium">Web search</div>
+                <div className="text-sm font-medium">
+                  {t("dashboard.webSearch")}
+                </div>
                 <div className="flex h-10 items-center justify-between rounded-md border px-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Globe className="h-4 w-4" />
-                    {webSearchEnabled ? "Enabled" : "Disabled"}
+                    {webSearchEnabled
+                      ? t("dashboard.webSearchEnabled")
+                      : t("dashboard.webSearchDisabled")}
                   </div>
                   <Switch
                     checked={webSearchEnabled}
@@ -210,7 +206,7 @@ export function PresentationDashboard() {
                 ) : (
                   <Sparkles className="mr-2 h-4 w-4" />
                 )}
-                Generate outline
+                {t("dashboard.generateOutline")}
               </Button>
               <Button
                 variant="outline"
@@ -218,7 +214,7 @@ export function PresentationDashboard() {
                 disabled={isCreating}
               >
                 <FilePlus2 className="mr-2 h-4 w-4" />
-                Blank presentation
+                {t("dashboard.blankPresentation")}
               </Button>
             </div>
           </CardContent>
@@ -228,18 +224,18 @@ export function PresentationDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <Presentation className="h-5 w-5 text-primary" />
-              Recent presentations
+              {t("dashboard.recentTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {isLoading ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading presentations...
+                {t("dashboard.loadingPresentations")}
               </div>
             ) : items.length === 0 ? (
               <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-                No presentations yet.
+                {t("dashboard.empty")}
               </div>
             ) : (
               items.slice(0, 8).map((item) => (
@@ -250,12 +246,14 @@ export function PresentationDashboard() {
                   className="flex w-full flex-col rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
                 >
                   <span className="font-medium">
-                    {item.title || "Untitled Presentation"}
+                    {item.title || t("common.untitledPresentation")}
                   </span>
                   <span className="text-sm text-muted-foreground">
-                    Updated{" "}
-                    {formatDistanceToNow(new Date(item.updatedAt), {
-                      addSuffix: true,
+                    {t("dashboard.updated", {
+                      time: formatDistanceToNow(new Date(item.updatedAt), {
+                        addSuffix: true,
+                        locale: dateLocale,
+                      }),
                     })}
                   </span>
                 </button>

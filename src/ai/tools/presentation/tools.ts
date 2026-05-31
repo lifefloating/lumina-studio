@@ -98,7 +98,7 @@ const change_theme = tool(
           "orbit",
           "piano",
           "mystique",
-          "allweoneDark",
+          "luminaDark",
           "crimson",
           "sunset",
           "forest",

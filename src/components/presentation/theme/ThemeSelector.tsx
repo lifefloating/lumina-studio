@@ -25,6 +25,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { useQuery } from "@tanstack/react-query";
 import { Palette } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useThemePanelState } from "../edit-panel/sections/theme/theme-panel-state";
 import { usePresentationTheme } from "../providers/PresentationThemeProvider";
 
@@ -58,6 +59,7 @@ function ThemeCardSkeleton() {
 }
 
 export function ThemeSelector() {
+  const { t } = useTranslation();
   const { resolvedTheme } = usePresentationTheme();
   const { theme: presentationTheme, setTheme: setPresentationTheme } =
     usePresentationState();
@@ -105,7 +107,7 @@ export function ThemeSelector() {
           className="text-muted-foreground hover:text-foreground"
         >
           <Palette className="mr-1 h-4 w-4" />
-          Theme
+          {t("header.theme")}
         </Button>
       </SheetTrigger>
       <SheetContent
@@ -122,14 +124,12 @@ export function ThemeSelector() {
         }
       >
         <SheetHeader className="mb-5">
-          <SheetTitle>Presentation Theme</SheetTitle>
-          <SheetDescription>
-            Choose a theme for your presentation
-          </SheetDescription>
+          <SheetTitle>{t("themeModal.themes")}</SheetTitle>
+          <SheetDescription>{t("themeModal.chooseColors")}</SheetDescription>
           <div>
             <CreateThemeModal></CreateThemeModal>
             <Button onClick={() => setOpenCreateThemeModal(true)}>
-              Create New Theme
+              {t("themeModal.customize")}
             </Button>
           </div>
         </SheetHeader>
@@ -141,8 +141,12 @@ export function ThemeSelector() {
         >
           <div className="mb-4">
             <TabsList>
-              <TabsTrigger value="my-themes">My Themes</TabsTrigger>
-              <TabsTrigger value="public-themes">Public Themes</TabsTrigger>
+              <TabsTrigger value="my-themes">
+                {t("themeModal.yourThemes")}
+              </TabsTrigger>
+              <TabsTrigger value="public-themes">
+                {t("themeModal.publicThemes")}
+              </TabsTrigger>
             </TabsList>
           </div>
 

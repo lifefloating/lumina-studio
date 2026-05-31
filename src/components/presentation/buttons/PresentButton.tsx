@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePresentationState } from "@/states/presentation-state";
 import { Play, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function PresentButton() {
+  const { t } = useTranslation();
   const isPresenting = usePresentationState((s) => s.isPresenting);
   const setIsPresenting = usePresentationState((s) => s.setIsPresenting);
   const setIsPresentingLoading = usePresentationState(
@@ -22,7 +24,7 @@ export function PresentButton() {
 
   // Check if generation is in progress
   const isGenerating = isGeneratingPresentation || isGeneratingOutline;
-  const buttonLabel = isPresenting ? "Exit" : "Present";
+  const buttonLabel = isPresenting ? t("present.exit") : t("present.enter");
 
   return (
     <Button

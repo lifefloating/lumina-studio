@@ -10,6 +10,7 @@ import {
   type ThemeProperties,
 } from "@/lib/presentation/themes";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface CustomTheme {
   id: string;
@@ -56,13 +57,16 @@ export function ThemeModalContent({
   onApplyTheme,
   onClose,
 }: ThemeModalContentProps) {
+  const { t } = useTranslation();
   const hasUserThemes = userThemes.length > 0;
   const hasPublicThemes = publicThemes.length > 0;
 
   return (
     <div className="flex h-full max-h-[85vh] w-full flex-col overflow-hidden border-border bg-background lg:w-[40%] lg:border-r">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-2">
-        <h2 className="p-4 text-lg font-semibold">Themes</h2>
+        <h2 className="p-4 text-lg font-semibold">
+          {t("themeModal.themes")}
+        </h2>
         <div className="flex items-center gap-2">
           <Button size="icon" variant="ghost" onClick={onClose}>
             <X className="size-4" />
@@ -71,7 +75,7 @@ export function ThemeModalContent({
       </div>
 
       <Tabs
-        defaultValue="allweone-themes"
+        defaultValue="lumina-themes"
         value={activeTab}
         onValueChange={onTabChange}
         className="flex min-h-0 flex-1 flex-col overflow-hidden"
@@ -79,22 +83,22 @@ export function ThemeModalContent({
         <div className="shrink-0 px-4 pt-2">
           <TabsList className="h-auto w-full justify-start gap-6 rounded-none border-b border-border bg-transparent p-0">
             <TabsTrigger
-              value="allweone-themes"
+              value="lumina-themes"
               className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
-              ALLWEONE
+              {t("themeModal.lumina")}
             </TabsTrigger>
             <TabsTrigger
               value="explore"
               className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
-              Explore
+              {t("themeModal.explore")}
             </TabsTrigger>
           </TabsList>
         </div>
 
         <ScrollArea className="max-h-[calc(85vh-4rem)] flex-1">
-          <TabsContent value="allweone-themes" className="m-0 p-4">
+          <TabsContent value="lumina-themes" className="m-0 p-4">
             <div className="grid grid-cols-2 gap-3 xl:grid-cols-2">
               {Object.entries(builtInThemes).map(([key, theme]) => (
                 <div key={key} className="h-44">
@@ -117,7 +121,7 @@ export function ThemeModalContent({
               {/* User Themes */}
               <div className="space-y-3">
                 <h3 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                  Your Themes
+                  {t("themeModal.yourThemes")}
                 </h3>
                 {isLoadingUserThemes ? (
                   <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
@@ -148,7 +152,7 @@ export function ThemeModalContent({
                   </div>
                 ) : (
                   <div className="py-4 text-sm text-muted-foreground italic">
-                    You haven&apos;t created any themes yet.
+                    {t("themeModal.emptyUserThemes")}
                   </div>
                 )}
               </div>
@@ -156,7 +160,7 @@ export function ThemeModalContent({
               {/* Public Themes */}
               <div className="space-y-3">
                 <h3 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                  Public Themes
+                  {t("themeModal.publicThemes")}
                 </h3>
                 {isLoadingPublicThemes ? (
                   <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
@@ -188,7 +192,7 @@ export function ThemeModalContent({
                   </div>
                 ) : (
                   <div className="py-4 text-sm text-muted-foreground italic">
-                    No public themes available.
+                    {t("themeModal.emptyPublicThemes")}
                   </div>
                 )}
               </div>
@@ -204,7 +208,7 @@ export function ThemeModalContent({
           className="w-full"
           disabled={!selectedThemeId}
         >
-          Apply Theme
+          {t("themeModal.applyTheme")}
         </Button>
       </div>
     </div>

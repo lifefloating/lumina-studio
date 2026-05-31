@@ -1,8 +1,10 @@
 import { usePresentationState } from "@/states/presentation-state";
 import { RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export function PromptInput() {
+  const { t } = useTranslation();
   const {
     presentationInput,
     setPresentationInput,
@@ -12,7 +14,7 @@ export function PromptInput() {
 
   const handleGenerateOutline = () => {
     if (!presentationInput.trim()) {
-      toast.error("Please enter a presentation topic");
+      toast.error(t("outline.topicRequired"));
       return;
     }
 
@@ -24,10 +26,10 @@ export function PromptInput() {
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <h3 className="text-sm font-semibold text-foreground">
-            Presentation prompt
+            {t("outline.promptLabel")}
           </h3>
           <p className="text-sm text-muted-foreground">
-            Refine the topic or regenerate the outline after edits.
+            {t("outline.promptDescription")}
           </p>
         </div>
         <button
@@ -38,7 +40,7 @@ export function PromptInput() {
           }`}
           onClick={handleGenerateOutline}
           disabled={isGeneratingOutline || !presentationInput.trim()}
-          aria-label="Regenerate outline"
+          aria-label={t("outline.regenerateAria")}
         >
           <RefreshCw size={18} />
         </button>
@@ -49,7 +51,7 @@ export function PromptInput() {
         value={presentationInput}
         onChange={(e) => setPresentationInput(e.target.value)}
         className="w-full rounded-xl border border-border/60 bg-muted/30 px-4 py-3 text-sm text-foreground outline-hidden transition-colors placeholder:text-muted-foreground focus:ring-2 focus:ring-indigo-400 sm:text-base"
-        placeholder="Enter your presentation topic..."
+        placeholder={t("outline.promptPlaceholder")}
         disabled={isGeneratingOutline}
       />
     </div>

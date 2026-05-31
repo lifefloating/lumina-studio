@@ -1,5 +1,6 @@
 import { type ImageModelList } from "@/app/_actions/apps/image-studio/generate";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const GoogleLogo = () => (
   <svg width="18" height="18" viewBox="0 0 24 24">
@@ -75,6 +76,7 @@ export function GenerateImageSlidesButton({
   disabled?: boolean;
   onGenerateImageSlides: (model: ImageModelList) => void;
 }) {
+  const { t } = useTranslation();
   const [sel, setSel] = useState<(typeof MODELS)[0]>(
     MODELS[0] as (typeof MODELS)[0],
   );
@@ -90,7 +92,7 @@ export function GenerateImageSlidesButton({
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            title="Change model"
+            title={t("imageSlides.changeModel")}
             size="lg"
             className="flex shrink-0 items-center justify-center bg-background px-3 text-muted-foreground hover:bg-accent focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-10 sm:px-2.5"
           >
@@ -113,7 +115,7 @@ export function GenerateImageSlidesButton({
 
         <DropdownMenuContent align="start" className="w-[220px] rounded-xl p-1">
           <DropdownMenuLabel className="px-2 pt-1 pb-2 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-            Model
+            {t("imageSlides.model")}
           </DropdownMenuLabel>
           {MODELS.map((m) => (
             <DropdownMenuItem
@@ -130,7 +132,7 @@ export function GenerateImageSlidesButton({
                   </span>
                   {m.premium && (
                     <span className="rounded-full border border-amber-300 bg-linear-to-br from-amber-100 to-amber-200 px-1.5 py-px text-[9px] font-bold tracking-wide text-amber-700 uppercase">
-                      Premium
+                      {t("imageSlides.premium")}
                     </span>
                   )}
                 </div>
@@ -170,10 +172,10 @@ export function GenerateImageSlidesButton({
         {isGenerating ? (
           <>
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
-            Generating...
+            {t("imageSlides.generating")}
           </>
         ) : (
-          "Generate Image Slides"
+          t("imageSlides.generate")
         )}
       </Button>
     </ButtonGroup>

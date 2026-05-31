@@ -1,9 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import { useThemePanelState } from "./theme-panel-state";
 
 export function ThemeTabs() {
+  const { t } = useTranslation();
   const { tab, setTab } = useThemePanelState();
 
   const handleTabChange = (tab: "standard" | "public") => {
@@ -22,7 +24,7 @@ export function ThemeTabs() {
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          ALLWEONE
+          {t("themeModal.lumina")}
         </button>
         <button
           onClick={() => handleTabChange("public")}
@@ -33,7 +35,7 @@ export function ThemeTabs() {
               : "text-muted-foreground hover:text-foreground",
           )}
         >
-          Explore
+          {t("themeModal.explore")}
         </button>
       </div>
     </div>

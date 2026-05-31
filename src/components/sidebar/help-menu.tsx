@@ -18,6 +18,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ExternalLink, Keyboard } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface HelpMenuProps {
   hideKeyboardShortcutsOnMobile?: boolean;
@@ -26,6 +27,7 @@ interface HelpMenuProps {
 export function HelpMenu({
   hideKeyboardShortcutsOnMobile = false,
 }: HelpMenuProps = {}) {
+  const { t } = useTranslation();
   const [keyboardShortcutsOpen, setKeyboardShortcutsOpen] = useState(false);
   const isMobile = useIsMobile();
   const shouldShowKeyboardShortcuts =
@@ -40,33 +42,33 @@ export function HelpMenu({
             size="icon"
             className="size-9 rounded-full bg-transparent text-sm"
           >
-            ?<span className="sr-only">Open help menu</span>
+            ?<span className="sr-only">{t("help.openHelpMenu")}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           {shouldShowKeyboardShortcuts ? (
             <DropdownMenuItem onClick={() => setKeyboardShortcutsOpen(true)}>
               <Keyboard className="mr-3 h-5 w-5" />
-              <span>Keyboard shortcuts</span>
+              <span>{t("help.keyboardShortcuts")}</span>
             </DropdownMenuItem>
           ) : null}
 
           <DropdownMenuItem asChild>
             <a
-              href="https://www.allweone.com/"
+              href="https://github.com/lifefloating/lumina-studio"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center"
             >
               <ExternalLink className="mr-3 h-5 w-5" />
-              <span>Visit allweone.com</span>
+              <span>{t("help.visitSite")}</span>
             </a>
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
 
           <div className="px-2 py-2 text-xs text-muted-foreground">
-            ALLWEONE Presentation
+            {t("help.brand")}
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -78,26 +80,24 @@ export function HelpMenu({
         >
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Keyboard shortcuts</DialogTitle>
-              <DialogDescription>
-                Quick access to common actions
-              </DialogDescription>
+              <DialogTitle>{t("help.title")}</DialogTitle>
+              <DialogDescription>{t("help.description")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm">Open help menu</span>
+                <span className="text-sm">{t("help.openHelpMenu")}</span>
                 <kbd className="rounded bg-muted px-2 py-1.5 text-xs font-semibold">
                   ?
                 </kbd>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Search</span>
+                <span className="text-sm">{t("help.search")}</span>
                 <kbd className="rounded bg-muted px-2 py-1.5 text-xs font-semibold">
                   Ctrl + K
                 </kbd>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Save</span>
+                <span className="text-sm">{t("help.save")}</span>
                 <kbd className="rounded bg-muted px-2 py-1.5 text-xs font-semibold">
                   Ctrl + S
                 </kbd>

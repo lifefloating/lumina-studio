@@ -11,8 +11,8 @@ export type ThemeName =
   | "ebony"
   | "mystique"
   | "phantom"
-  | "allweoneLight"
-  | "allweoneDark"
+  | "luminaLight"
+  | "luminaDark"
   | "crimson"
   | "ember"
   | "sunset"
@@ -511,9 +511,9 @@ export const themes: { [key in ThemeName]: ThemeProperties } = {
     },
   },
 
-  // ==================== ALLWEONE ====================
-  allweoneLight: {
-    name: "Allweone",
+  // ==================== Lumina ====================
+  luminaLight: {
+    name: "Lumina",
     description: "Clean and high contrast",
     mode: "light",
     colors: {
@@ -548,8 +548,8 @@ export const themes: { [key in ThemeName]: ThemeProperties } = {
     },
   },
 
-  allweoneDark: {
-    name: "Allweone",
+  luminaDark: {
+    name: "Lumina",
     description: "Cyberpunk glow",
     mode: "dark",
     colors: {

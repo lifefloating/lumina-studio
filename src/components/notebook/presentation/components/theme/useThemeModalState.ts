@@ -32,7 +32,7 @@ interface CustomTheme {
 export function useThemeModalState(isOpen: boolean) {
   const { theme: currentThemeId, setTheme } = usePresentationState();
 
-  const [activeTab, setActiveTab] = useState("allweone-themes");
+  const [activeTab, setActiveTab] = useState("lumina-themes");
   const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
   const [selectedThemeData, setSelectedThemeData] =
     useState<ThemeProperties | null>(null);

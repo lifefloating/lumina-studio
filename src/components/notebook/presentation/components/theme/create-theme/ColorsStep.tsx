@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Edit2, Heart } from "lucide-react";
 import { useState } from "react";
 import { type Control, Controller, useWatch } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 import { type ColorKey, type ThemeFormValues } from "../types";
 import { ColorSettingsPanel } from "./ColorSettingsPanel";
@@ -23,6 +24,7 @@ export function ColorsStep({
   onColorChange,
   onSelectColorTheme,
 }: ColorsStepProps) {
+  const { t } = useTranslation();
   // Use useWatch to properly subscribe to form changes
   const watchColors = useWatch({ control, name: "colors" });
   const [mode, setMode] = useState<"curated" | "customize">(
@@ -33,7 +35,7 @@ export function ColorsStep({
     <div className="flex h-full flex-1 flex-col">
       <div className="border-b border-border p-6">
         <p className="mb-4 text-center text-sm text-muted-foreground">
-          Choose your theme and background colors
+          {t("themeModal.chooseColors")}
         </p>
         <div className="flex gap-2">
           <button
@@ -46,7 +48,7 @@ export function ColorsStep({
             )}
           >
             <Heart className="h-4 w-4" />
-            ALLWEONE®
+            {t("themeModal.lumina")}
           </button>
           <button
             onClick={() => setMode("customize")}
@@ -58,7 +60,7 @@ export function ColorsStep({
             )}
           >
             <Edit2 className="h-4 w-4" />
-            Customize
+            {t("themeModal.customize")}
           </button>
         </div>
       </div>

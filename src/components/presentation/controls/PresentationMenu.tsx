@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export function PresentationMenu({
@@ -35,6 +36,7 @@ export function PresentationMenu({
 }: {
   readOnly?: boolean;
 }) {
+  const { t } = useTranslation();
   const currentPresentationId = usePresentationState(
     (state) => state.currentPresentationId,
   );
@@ -54,7 +56,7 @@ export function PresentationMenu({
     useMutation({
       mutationFn: async () => {
         if (!currentPresentationId) {
-          toast.error("Current presentation is not available");
+          toast.error(t("menu.currentUnavailable"));
           throw new Error("CURRENT_PRESENTATION_ID_MISSING");
         }
 
@@ -70,7 +72,7 @@ export function PresentationMenu({
         toast.error(data.message);
       },
       onError: () => {
-        toast.error("Failed to duplicate presentation");
+        toast.error(t("menu.duplicateFailed"));
       },
     });
 
@@ -83,7 +85,7 @@ export function PresentationMenu({
       const language = usePresentationState.getState().language;
 
       return createBlankPresentation(
-        "Untitled Presentation",
+        t("menu.untitled"),
         theme ??
           (localStorage.getItem("theme") === "dark" ? "ebony" : "mystique"),
         language,
@@ -96,10 +98,10 @@ export function PresentationMenu({
         return;
       }
 
-      toast.error(data.message);
+      toast.error(data.message ?? t("menu.createFailed"));
     },
     onError: () => {
-      toast.error("Failed to create presentation");
+      toast.error(t("menu.createFailed"));
     },
   });
 
@@ -115,7 +117,7 @@ export function PresentationMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Open presentation menu">
+        <Button variant="ghost" size="icon" aria-label={t("menu.open")}>
           <FolderOpen className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -125,12 +127,12 @@ export function PresentationMenu({
           onClick={() => void createBlankPresentationMutation()}
         >
           <Plus className="mr-2 h-4 w-4" />
-          New Presentation
+          {t("menu.newPresentation")}
         </DropdownMenuItem>
         {!readOnly ? (
           <DropdownMenuItem onClick={focusTitleInput}>
             <FileEdit className="mr-2 h-4 w-4" />
-            Rename
+            {t("menu.rename")}
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuItem
@@ -138,7 +140,7 @@ export function PresentationMenu({
           onClick={() => void duplicatePresentationMutation()}
         >
           <Copy className="mr-2 h-4 w-4" />
-          {readOnly ? "Clone to My Account" : "Duplicate"}
+          {readOnly ? t("menu.cloneToAccount") : t("menu.duplicate")}
         </DropdownMenuItem>
 
         {!readOnly ? (
@@ -146,24 +148,24 @@ export function PresentationMenu({
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled={!canUndo} onClick={undo}>
               <Undo className="mr-2 h-4 w-4" />
-              Undo
+              {t("menu.undo")}
             </DropdownMenuItem>
             <DropdownMenuItem disabled={!canRedo} onClick={redo}>
               <Redo className="mr-2 h-4 w-4" />
-              Redo
+              {t("menu.redo")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setActiveRightPanel("globalSettings")}>
               <Settings className="mr-2 h-4 w-4" />
-              Page setup
+              {t("menu.pageSetup")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setActiveRightPanel("theme")}>
               <Palette className="mr-2 h-4 w-4" />
-              Theme panel
+              {t("menu.themePanel")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setActiveRightPanel("agent")}>
               <Bot className="mr-2 h-4 w-4" />
-              Agent panel
+              {t("menu.agentPanel")}
             </DropdownMenuItem>
           </>
         ) : null}
@@ -171,7 +173,7 @@ export function PresentationMenu({
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push("/presentation")}>
           <FolderOpen className="mr-2 h-4 w-4" />
-          All Presentations
+          {t("menu.allPresentations")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

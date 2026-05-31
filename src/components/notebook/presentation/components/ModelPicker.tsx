@@ -18,6 +18,7 @@ import {
 import { usePresentationState } from "@/states/presentation-state";
 import { Bot, Cpu, Loader2, Monitor } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 const modelPickerLogger = createLogger("client:model-picker");
 
@@ -26,6 +27,7 @@ export function ModelPicker({
 }: {
   shouldShowLabel?: boolean;
 }) {
+  const { t } = useTranslation();
   const { modelProvider, setModelProvider, modelId, setModelId } =
     usePresentationState();
 
@@ -79,8 +81,12 @@ export function ModelPicker({
         : `lm-studio ${model.name}`,
     icon: model.provider === "ollama" ? Cpu : Monitor,
     description: isDownloadable
-      ? `Downloadable ${model.provider === "ollama" ? "Ollama" : "LM Studio"} model (will auto-download)`
-      : `Local ${model.provider === "ollama" ? "Ollama" : "LM Studio"} model`,
+      ? t("modelPicker.downloadableDescription", {
+          provider: model.provider === "ollama" ? "Ollama" : "LM Studio",
+        })
+      : t("modelPicker.localDescription", {
+          provider: model.provider === "ollama" ? "Ollama" : "LM Studio",
+        }),
   });
 
   const getCurrentModelValue = () => {
@@ -124,7 +130,7 @@ export function ModelPicker({
     }
 
     return {
-      label: "Select model",
+      label: t("modelPicker.selectModel"),
       icon: Bot,
     };
   };
@@ -182,7 +188,7 @@ export function ModelPicker({
     <div className="space-y-1.5">
       {shouldShowLabel && (
         <label className="block text-xs font-medium text-muted-foreground">
-          Text model
+          {t("modelPicker.label")}
         </label>
       )}
       <Select value={getCurrentModelValue()} onValueChange={handleModelChange}>
@@ -201,16 +207,16 @@ export function ModelPicker({
         <SelectContent>
           {isLoading && !isInitialLoad && (
             <SelectGroup>
-              <SelectLabel>Loading Models</SelectLabel>
+              <SelectLabel>{t("modelPicker.loadingModels")}</SelectLabel>
               <SelectItem value="loading" disabled>
                 <div className="flex items-center gap-3">
                   <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
                   <div className="flex min-w-0 flex-col">
                     <span className="truncate text-sm">
-                      Refreshing models...
+                      {t("modelPicker.refreshing")}
                     </span>
                     <span className="truncate text-xs text-muted-foreground">
-                      Checking for new models
+                      {t("modelPicker.checking")}
                     </span>
                   </div>
                 </div>
@@ -219,14 +225,14 @@ export function ModelPicker({
           )}
 
           <SelectGroup>
-            <SelectLabel>Cloud Models</SelectLabel>
+            <SelectLabel>{t("modelPicker.cloudModels")}</SelectLabel>
             <SelectItem value="openai">
               <div className="flex items-center gap-3">
                 <Bot className="h-4 w-4 flex-shrink-0" />
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm">GPT-4o-mini</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    Cloud-based AI model
+                    {t("modelPicker.cloudDescription")}
                   </span>
                 </div>
               </div>
@@ -235,7 +241,7 @@ export function ModelPicker({
 
           {ollamaModels.length > 0 && (
             <SelectGroup>
-              <SelectLabel>Local Ollama Models</SelectLabel>
+              <SelectLabel>{t("modelPicker.localOllamaModels")}</SelectLabel>
               {ollamaModels.map((model) => {
                 const option = createModelOption(model);
                 const Icon = option.icon;
@@ -261,7 +267,7 @@ export function ModelPicker({
 
           {lmStudioModels.length > 0 && (
             <SelectGroup>
-              <SelectLabel>Local LM Studio Models</SelectLabel>
+              <SelectLabel>{t("modelPicker.localLmStudioModels")}</SelectLabel>
               {lmStudioModels.map((model) => {
                 const option = createModelOption(model);
                 const Icon = option.icon;
@@ -287,16 +293,16 @@ export function ModelPicker({
 
           {lmStudioModels.length === 0 && (
             <SelectGroup>
-              <SelectLabel>LM Studio</SelectLabel>
+              <SelectLabel>{t("modelPicker.lmStudio")}</SelectLabel>
               <SelectItem value="lmstudio-setup" disabled>
                 <div className="flex items-center gap-3">
                   <Monitor className="h-4 w-4 flex-shrink-0" />
                   <div className="flex min-w-0 flex-col">
                     <span className="truncate text-sm">
-                      Start LM Studio to use local models
+                      {t("modelPicker.lmStudioSetupTitle")}
                     </span>
                     <span className="truncate text-xs text-muted-foreground">
-                      Turn on the server and load a model to make it selectable
+                      {t("modelPicker.lmStudioSetupDescription")}
                     </span>
                   </div>
                 </div>
@@ -306,7 +312,9 @@ export function ModelPicker({
 
           {showDownloadable && downloadableOllamaModels.length > 0 && (
             <SelectGroup>
-              <SelectLabel>Downloadable Ollama Models</SelectLabel>
+              <SelectLabel>
+                {t("modelPicker.downloadableOllamaModels")}
+              </SelectLabel>
               {downloadableOllamaModels.map((model) => {
                 const option = createModelOption(model, true);
                 const Icon = option.icon;

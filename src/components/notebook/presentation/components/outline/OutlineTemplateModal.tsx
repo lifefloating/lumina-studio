@@ -14,6 +14,7 @@ import { usePresentationState } from "@/states/presentation-state";
 import { Check, ChevronRight, LayoutGrid, Menu, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   TEMPLATE_CATEGORIES,
   TEMPLATE_DEFINITIONS,
@@ -89,6 +90,7 @@ export function OutlineTemplateModal({
   mode,
   outlineId,
 }: OutlineTemplateModalProps) {
+  const { t } = useTranslation();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -220,10 +222,15 @@ export function OutlineTemplateModal({
               )}
               <div className="min-w-0">
                 <CredenzaTitle>
-                  {mode === "global" ? "Select Layouts" : "Select Layout"}
+                  {mode === "global"
+                    ? t("outline.selectLayouts")
+                    : t("outline.selectLayout")}
                 </CredenzaTitle>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {effectiveSelection.length}/{numSlides} selected
+                  {t("outline.selectedCount", {
+                    selected: effectiveSelection.length,
+                    total: numSlides,
+                  })}
                 </p>
               </div>
             </div>
@@ -236,11 +243,11 @@ export function OutlineTemplateModal({
                     size="sm"
                     className="h-8"
                   >
-                    Clear All
+                    {t("outline.clearAll")}
                   </Button>
                 )}
                 <Button onClick={handleApply} size="sm" className="h-8">
-                  {mode === "global" ? "Done" : "Apply"}
+                  {mode === "global" ? t("common.done") : t("common.apply")}
                 </Button>
                 <Button
                   onClick={onClose}
@@ -281,7 +288,7 @@ export function OutlineTemplateModal({
                     )}
                   >
                     <LayoutGrid className="h-4 w-4" />
-                    <span>All Templates</span>
+                    <span>{t("outline.allTemplates")}</span>
                   </button>
                   {TEMPLATE_CATEGORIES.map((category) => (
                     <button
@@ -342,7 +349,7 @@ export function OutlineTemplateModal({
                   )}
                 >
                   <LayoutGrid className="h-4 w-4" />
-                  <span>All Layouts</span>
+                  <span>{t("outline.allLayouts")}</span>
                 </button>
                 {TEMPLATE_CATEGORIES.map((category) => (
                   <button
@@ -387,11 +394,11 @@ export function OutlineTemplateModal({
             <div className="flex flex-col gap-2 border-t px-4 py-3">
               {effectiveSelection.length > 0 && (
                 <Button onClick={handleClearAll} variant="outline">
-                  Clear All
+                  {t("outline.clearAll")}
                 </Button>
               )}
               <Button onClick={handleApply}>
-                {mode === "global" ? "Done" : "Apply"}
+                {mode === "global" ? t("common.done") : t("common.apply")}
               </Button>
             </div>
           </div>

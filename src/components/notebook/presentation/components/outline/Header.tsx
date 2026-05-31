@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { GENERATION_LANGUAGE_OPTIONS } from "@/lib/i18n/resources";
 import { cn } from "@/lib/utils";
 import { usePresentationState } from "@/states/presentation-state";
 import {
@@ -27,9 +28,11 @@ import {
   Search,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export function Header() {
+  const { t } = useTranslation();
   const {
     presentationInput,
     setPresentationInput,
@@ -55,7 +58,7 @@ export function Header() {
 
   function handleRegenerate() {
     if (!prompt) {
-      toast.error("Please enter a presentation topic");
+      toast.error(t("outline.topicRequired"));
       return;
     }
     setIsRegenerating(true);
@@ -83,7 +86,7 @@ export function Header() {
                 )}
               />
               <span className="truncate text-sm font-medium">
-                {prompt || "Untitled presentation"}
+                {prompt || t("outline.untitled")}
               </span>
             </button>
           </CollapsibleTrigger>
@@ -91,13 +94,13 @@ export function Header() {
           {/* Inline metadata badges */}
           <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
             <Badge variant="secondary" className="font-normal">
-              {numSlides} slides
+              {t("outline.slideCount", { count: numSlides })}
             </Badge>
             <Badge variant="secondary" className="font-normal">
               {language}
             </Badge>
             <Badge variant="secondary" className="font-normal">
-              {webSearchEnabled ? "Search on" : "Search off"}
+              {webSearchEnabled ? t("outline.searchOn") : t("outline.searchOff")}
             </Badge>
           </div>
 
@@ -112,7 +115,7 @@ export function Header() {
             <RefreshCw
               className={cn("size-3.5", isRegenerating && "animate-spin")}
             />
-            <span className="hidden sm:inline">Regenerate</span>
+            <span className="hidden sm:inline">{t("outline.regenerate")}</span>
           </Button>
         </div>
 
@@ -123,13 +126,13 @@ export function Header() {
               {/* Mobile-only badges */}
               <div className="flex flex-wrap gap-1.5 sm:hidden">
                 <Badge variant="secondary" className="font-normal">
-                  {numSlides} slides
+                  {t("outline.slideCount", { count: numSlides })}
                 </Badge>
                 <Badge variant="secondary" className="font-normal">
                   {language}
                 </Badge>
                 <Badge variant="secondary" className="font-normal">
-                  {webSearchEnabled ? "Search on" : "Search off"}
+                  {webSearchEnabled ? t("outline.searchOn") : t("outline.searchOff")}
                 </Badge>
               </div>
 
@@ -139,7 +142,7 @@ export function Header() {
                   htmlFor="outline-prompt"
                   className="text-xs font-medium text-muted-foreground"
                 >
-                  Prompt
+                  {t("outline.prompt")}
                 </label>
                 <Textarea
                   id="outline-prompt"
@@ -147,7 +150,7 @@ export function Header() {
                   onChange={(e) => setPresentationInput(e.target.value)}
                   disabled={isGeneratingOutline}
                   rows={3}
-                  placeholder="Describe the presentation you want to generate…"
+                  placeholder={t("dashboard.promptPlaceholder")}
                   className="min-h-20 resize-none rounded-xl border-border/50 bg-background px-3.5 py-2.5 text-sm shadow-none focus-visible:ring-2 focus-visible:ring-primary/30"
                 />
               </div>
@@ -160,7 +163,7 @@ export function Header() {
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                     <Layers className="size-3.5" />
-                    Slides
+                    {t("dashboard.slides")}
                   </label>
                   <Select
                     value={String(numSlides)}
@@ -172,7 +175,7 @@ export function Header() {
                     <SelectContent>
                       {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
                         <SelectItem key={n} value={String(n)}>
-                          {n} {n === 1 ? "slide" : "slides"}
+                          {t("outline.slideCount", { count: n })}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -183,25 +186,18 @@ export function Header() {
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                     <Globe className="size-3.5" />
-                    Language
+                    {t("outline.language")}
                   </label>
                   <Select value={language} onValueChange={setLanguage}>
                     <SelectTrigger className="h-9 rounded-lg bg-background">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="en-US">English (US)</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
-                      <SelectItem value="de">German</SelectItem>
-                      <SelectItem value="pt">Portuguese</SelectItem>
-                      <SelectItem value="it">Italian</SelectItem>
-                      <SelectItem value="ja">Japanese</SelectItem>
-                      <SelectItem value="ko">Korean</SelectItem>
-                      <SelectItem value="zh">Chinese</SelectItem>
-                      <SelectItem value="ru">Russian</SelectItem>
-                      <SelectItem value="hi">Hindi</SelectItem>
-                      <SelectItem value="ar">Arabic</SelectItem>
+                      {GENERATION_LANGUAGE_OPTIONS.map(([value, labelKey]) => (
+                        <SelectItem key={value} value={value}>
+                          {t(labelKey)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -210,11 +206,13 @@ export function Header() {
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                     <Search className="size-3.5" />
-                    Web search
+                    {t("dashboard.webSearch")}
                   </label>
                   <div className="flex h-9 items-center justify-between rounded-lg border bg-background px-3">
                     <span className="text-sm text-muted-foreground">
-                      {webSearchEnabled ? "Enabled" : "Disabled"}
+                      {webSearchEnabled
+                        ? t("dashboard.webSearchEnabled")
+                        : t("dashboard.webSearchDisabled")}
                     </span>
                     <Switch
                       checked={webSearchEnabled}

@@ -9,6 +9,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Check, ChevronDown, GripVertical, Plus, X } from "lucide-react";
 import { memo, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TEMPLATE_DEFINITIONS } from "../../utils/templates";
 
 interface OutlineItemProps {
@@ -38,6 +39,7 @@ export const OutlineItem = memo(function OutlineItem({
   availableTemplates = [],
   onOpenTemplateModal,
 }: OutlineItemProps) {
+  const { t } = useTranslation();
   // Always editable, no need for isEditing state
   const [editedTitle, setEditedTitle] = useState(title);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -86,8 +88,8 @@ export const OutlineItem = memo(function OutlineItem({
   // Get display name for selected template
   const selectedTemplateName = selectedTemplateId
     ? (availableTemplates.find((t) => t.id === selectedTemplateId)?.name ??
-      "Custom")
-    : "Auto";
+      t("outline.custom"))
+    : t("outline.auto");
 
   return (
     <div
@@ -148,10 +150,10 @@ export const OutlineItem = memo(function OutlineItem({
               >
                 <div className="flex h-24 w-28 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-card">
                   <span className="text-[10px] text-muted-foreground">
-                    Auto
+                    {t("outline.auto")}
                   </span>
                 </div>
-                <span className="flex-1 text-sm">Auto (AI)</span>
+                <span className="flex-1 text-sm">{t("outline.autoAi")}</span>
                 {!selectedTemplateId && (
                   <Check className="size-4 shrink-0 text-primary" />
                 )}
@@ -195,7 +197,9 @@ export const OutlineItem = memo(function OutlineItem({
                 <div className="flex h-24 w-28 shrink-0 items-center justify-center overflow-hidden rounded border border-dashed border-primary/50 bg-primary/5">
                   <Plus className="size-4 text-primary" />
                 </div>
-                <span className="flex-1 text-sm">More Templates</span>
+                <span className="flex-1 text-sm">
+                  {t("outline.moreTemplates")}
+                </span>
               </button>
             </div>
           </PopoverContent>

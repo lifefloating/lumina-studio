@@ -136,14 +136,14 @@ export async function POST(req: Request) {
   const actionName = "presentation.outline.post";
   const requestId = crypto.randomUUID();
   const routeLogger = createLogger("api:presentation-outline");
-  const span = logger.startSpan(`allweone.api.${actionName}`, {
+  const span = logger.startSpan(`lumina.api.${actionName}`, {
     attributes: {
-      "allweone.scope": "api",
-      "allweone.action.type": "api_route",
-      "allweone.action.name": actionName,
+      "lumina.scope": "api",
+      "lumina.action.type": "api_route",
+      "lumina.action.name": actionName,
       "http.method": "POST",
       "http.route": "/api/presentation/outline",
-      "allweone.request.id": requestId,
+      "lumina.request.id": requestId,
     },
   });
 
@@ -152,8 +152,8 @@ export async function POST(req: Request) {
     const session = await auth();
     if (!session) {
       routeLogger.warn("Outline request rejected: unauthorized", { requestId });
-      span.event("allweone.api.request_rejected", {
-        "allweone.validation.error": "unauthorized",
+      span.event("lumina.api.request_rejected", {
+        "lumina.validation.error": "unauthorized",
       });
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -171,10 +171,10 @@ export async function POST(req: Request) {
     const webSearch = Boolean(metadata.webSearch);
 
     span.annotate({
-      "allweone.presentation.cards.count": numberOfCards,
-      "allweone.presentation.prompt.length": prompt.length,
-      "allweone.presentation.language": language,
-      "allweone.presentation.web_search": webSearch,
+      "lumina.presentation.cards.count": numberOfCards,
+      "lumina.presentation.prompt.length": prompt.length,
+      "lumina.presentation.language": language,
+      "lumina.presentation.web_search": webSearch,
     });
     routeLogger.info("Validated outline request payload", {
       requestId,
@@ -194,8 +194,8 @@ export async function POST(req: Request) {
         language,
         messageCount: messages.length,
       });
-      span.event("allweone.api.request_rejected", {
-        "allweone.validation.error": "missing_required_fields",
+      span.event("lumina.api.request_rejected", {
+        "lumina.validation.error": "missing_required_fields",
       });
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -303,7 +303,7 @@ export async function POST(req: Request) {
       modelProvider,
       modelId: modelId || "gpt-4o-mini",
     });
-    span.event("allweone.api.response_stream_created");
+    span.event("lumina.api.response_stream_created");
     return createUIMessageStreamResponse({
       stream: toUIMessageStream(stream),
     });

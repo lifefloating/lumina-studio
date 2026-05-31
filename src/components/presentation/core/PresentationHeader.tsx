@@ -4,10 +4,12 @@ import { usePresentationState } from "@/states/presentation-state";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // Import our new components
 import { updatePresentationTitle } from "@/app/_actions/notebook/presentation/presentationActions";
-import AllweoneText from "@/components/globals/allweone-logo";
+import LuminaLogo from "@/components/globals/lumina-logo";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { PresentButton } from "@/components/presentation/buttons/PresentButton";
 import { ShareButton } from "@/components/presentation/buttons/ShareButton";
 import { PresentationMenu } from "@/components/presentation/controls/PresentationMenu";
@@ -21,6 +23,7 @@ interface PresentationHeaderProps {
 }
 
 export default function PresentationHeader({ title }: PresentationHeaderProps) {
+  const { t } = useTranslation();
   const currentPresentationTitle = usePresentationState(
     (s) => s.currentPresentationTitle,
   );
@@ -73,12 +76,12 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
             transition={{ duration: 1 }}
           >
             <Link href="/" className="h-max">
-              <AllweoneText className="h-10 w-30 cursor-pointer transition-transform duration-100 active:scale-95"></AllweoneText>
+              <LuminaLogo className="h-10 w-30 cursor-pointer transition-transform duration-100 active:scale-95" />
             </Link>
           </motion.div>
         </div>
 
-        {/* <SideBarDropdown /> */}
+        <LanguageSwitcher />
       </header>
     );
 
@@ -135,11 +138,11 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
           <Button
             variant="ghost"
             className="h-9 gap-1.5"
-            title="Theme"
+            title={t("header.theme")}
             onClick={() => setActiveRightPanel("theme")}
           >
             <Palette className="size-4" />
-            <span className="hidden sm:inline">Theme</span>
+            <span className="hidden sm:inline">{t("header.theme")}</span>
           </Button>
         )}
 
@@ -158,12 +161,14 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
             className="gap-2"
           >
             <Bot className="h-4 w-4" />
-            <span className="hidden sm:inline">Agent</span>
+            <span className="hidden sm:inline">{t("header.agent")}</span>
           </Button>
         )}
 
         {/* Present button - Only in presentation page, not outline */}
         {isPresentationPage && <PresentButton />}
+
+        <LanguageSwitcher />
 
         {/* User profile dropdown - Keep this on all pages */}
         {/* {!isPresenting && <SideBarDropdown />} */}

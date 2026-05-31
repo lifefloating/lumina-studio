@@ -2,6 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { type ThemeProperties } from "@/lib/presentation/themes";
+import { useTranslation } from "react-i18next";
 import { ThemeCard } from "./ThemeCard";
 
 export interface ThemeListItem {
@@ -29,6 +30,8 @@ export function ThemeSelector({
   emptyMessage = "No themes available.",
   skeletonCount = 6,
 }: ThemeSelectorProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 gap-3 px-4 pt-3">
@@ -58,7 +61,7 @@ export function ThemeSelector({
       {hasUserThemes && (
         <div className="px-4 pt-3">
           <h3 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-            Your Themes
+            {t("themeModal.yourThemes")}
           </h3>
           <div className="grid grid-cols-2 gap-3">
             {userThemes.map((item) => (
@@ -83,7 +86,7 @@ export function ThemeSelector({
         <div className={`px-4 ${hasUserThemes ? "pt-6" : "pt-3"}`}>
           {hasUserThemes && (
             <h3 className="mb-3 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-              Public Themes
+              {t("themeModal.publicThemes")}
             </h3>
           )}
           <div className="grid grid-cols-2 gap-3">

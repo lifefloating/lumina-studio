@@ -6,8 +6,10 @@ import {
 import { usePresentationState } from "@/states/presentation-state";
 import { Loader2, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export function ToolCallDisplay() {
+  const { t } = useTranslation();
   const {
     searchResults,
     isGeneratingOutline,
@@ -53,10 +55,12 @@ export function ToolCallDisplay() {
               <Search className="h-4 w-4 text-blue-500" />
               <span className="text-sm font-medium">
                 {searchResults.length > 0
-                  ? `Search Results (${searchResults.length})`
+                  ? t("outline.searchResults", {
+                      count: searchResults.length,
+                    })
                   : webSearchEnabled
-                    ? `Web Search`
-                    : `Tools`}
+                    ? t("outline.webSearch")
+                    : t("outline.tools")}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -66,7 +70,7 @@ export function ToolCallDisplay() {
                 </span>
               )}
               <span className="text-xs text-muted-foreground">
-                {isExpanded ? "Hide" : "Show"}
+                {isExpanded ? t("outline.hide") : t("outline.show")}
               </span>
             </div>
           </button>
@@ -84,7 +88,7 @@ export function ToolCallDisplay() {
                     const title =
                       typeof item.title === "string" && item.title.length > 0
                         ? item.title
-                        : "Untitled result";
+                        : t("outline.untitledResult");
                     const content =
                       typeof item.content === "string" ? item.content : "";
                     const url = typeof item.url === "string" ? item.url : "";
@@ -115,7 +119,7 @@ export function ToolCallDisplay() {
                   })
                 ) : (
                   <div className="text-xs text-muted-foreground">
-                    No search results yet.
+                    {t("outline.noSearchResults")}
                   </div>
                 )}
               </div>
@@ -129,7 +133,7 @@ export function ToolCallDisplay() {
                   <Loader2 className="size-4 animate-spin text-blue-500" />
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  AI is researching...
+                  {t("outline.aiResearching")}
                 </span>
               </div>
             </div>

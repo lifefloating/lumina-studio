@@ -26,9 +26,9 @@ export async function updatePresentationThumbnailUrl({
     "presentation.presentationThumbnailActions.updatePresentationThumbnailUrl";
   const span = logger.startSpan(`presentation.server_action.${actionName}`, {
     attributes: {
-      "allweone.scope": "presentation",
-      "allweone.action.type": "server_action",
-      "allweone.action.name": actionName,
+      "lumina.scope": "presentation",
+      "lumina.action.type": "server_action",
+      "lumina.action.name": actionName,
     },
   });
 

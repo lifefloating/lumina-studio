@@ -75,7 +75,7 @@ function SearchResult({ message }: { message?: string }) {
   );
 }
 
-function PresentationAIToolMessage({
+function LuminaToolMessage({
   message,
   isStreaming,
 }: {
@@ -160,10 +160,7 @@ export default function AIMessageComponent({
       {hasToolCalls &&
         (isLastMessage ||
           !hiddenTools.includes(getToolName(toolParts[0]!))) && (
-          <PresentationAIToolMessage
-            message={message}
-            isStreaming={isStreaming}
-          />
+          <LuminaToolMessage message={message} isStreaming={isStreaming} />
         )}
       {text ? (
         <div className="whitespace-pre-wrap rounded-2xl bg-muted px-3 py-2 text-sm text-foreground shadow-2xs">
