@@ -2,6 +2,7 @@ import NextAuthProvider from "@/provider/NextAuthProvider";
 import { AppI18nProvider } from "@/provider/i18n-provider";
 import TanStackQueryProvider from "@/provider/TanstackProvider";
 import { ThemeProvider } from "@/provider/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
 import { LOCALE_COOKIE, normalizeLocale } from "@/lib/i18n/resources";
 import { type Metadata } from "next";
@@ -32,6 +33,7 @@ export default async function RootLayout({
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
               <AppI18nProvider initialLocale={initialLocale}>
                 {children}
+                <Toaster />
               </AppI18nProvider>
             </ThemeProvider>
           </NextAuthProvider>

@@ -12,34 +12,21 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useToast } from "@/components/ui/use-toast";
 import { usePresentationState } from "@/states/presentation-state";
 import { Download, Loader2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { downloadBlob, exportPresentationToPptx, scanAllSlides } from "../export";
 import { SaveStatus } from "./SaveStatus";
 
 export function ExportButton() {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const { toast } = useToast();
-  const exportResultRef = useRef<{ blob: Blob; fileName: string } | null>(null);
-
-  const handleDownload = () => {
-    if (!exportResultRef.current) {
-      return;
-    }
-
-    downloadBlob(
-      exportResultRef.current.blob,
-      exportResultRef.current.fileName,
-    );
-  };
 
   const handleExport = async () => {
+    const toastId = toast.loading("Scanning slides...");
     try {
       setIsExporting(true);
-      exportResultRef.current = null;
 
       const { slides, currentPresentationTitle } =
         usePresentationState.getState();
@@ -47,17 +34,6 @@ export function ExportButton() {
       if (slides.length === 0) {
         throw new Error("No slides to export");
       }
-
-      const { update, dismiss } = toast({
-        title: "Exporting Presentation",
-        description: (
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Scanning slides...</span>
-          </div>
-        ),
-        duration: Infinity,
-      });
 
       const scanResults = await scanAllSlides(slides);
 
@@ -67,50 +43,26 @@ export function ExportButton() {
         );
       }
 
-      update({
-        description: (
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Generating PowerPoint...</span>
-          </div>
-        ),
-      });
+      toast.loading("Generating PowerPoint...", { id: toastId });
 
-      exportResultRef.current = await exportPresentationToPptx(
+      const { blob, fileName } = await exportPresentationToPptx(
         scanResults,
         slides,
         currentPresentationTitle ?? "presentation",
       );
 
-      update({
-        title: "Export Complete",
-        description: (
-          <Button
-            size="sm"
-            variant="outline"
-            className="mt-2"
-            onClick={() => {
-              handleDownload();
-              dismiss();
-            }}
-          >
-            <Download className="mr-1 h-4 w-4" />
-            Download PowerPoint
-          </Button>
-        ),
-        duration: 15000,
-      });
+      // Trigger the browser download immediately.
+      downloadBlob(blob, fileName);
 
+      toast.success("Export complete", { id: toastId });
       setIsExportDialogOpen(false);
     } catch (error) {
-      toast({
-        title: "Export Failed",
-        description:
-          error instanceof Error
-            ? error.message
-            : "There was an error exporting your presentation.",
-        variant: "destructive",
-      });
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "There was an error exporting your presentation.",
+        { id: toastId },
+      );
       console.error("Export error:", error);
     } finally {
       setIsExporting(false);

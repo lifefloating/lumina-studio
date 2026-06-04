@@ -28,6 +28,88 @@ function resolveImagesGenerationUrl(baseUrl: string) {
     : `${trimmedBaseUrl}/v1/images/generations`;
 }
 
+// Relay / proxied image endpoints are slow (single requests observed at
+// 100s–250s) and frequently drop idle keep-alive sockets, surfacing as
+// `UND_ERR_SOCKET: other side closed`. We therefore use a generous per-request
+// timeout plus a few retries with exponential backoff. All knobs are env-tunable.
+const DEFAULT_IMAGE_TIMEOUT_MS = 300_000;
+const DEFAULT_IMAGE_MAX_RETRIES = 3;
+
+function getImageTimeoutMs() {
+  const parsed = Number(env.GPT_IMAGE2_TIMEOUT_MS);
+  return Number.isFinite(parsed) && parsed > 0
+    ? parsed
+    : DEFAULT_IMAGE_TIMEOUT_MS;
+}
+
+function getImageMaxRetries() {
+  const parsed = Number(env.GPT_IMAGE2_MAX_RETRIES);
+  return Number.isFinite(parsed) && parsed >= 0
+    ? Math.floor(parsed)
+    : DEFAULT_IMAGE_MAX_RETRIES;
+}
+
+function isRetryableError(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  // AbortError = our own timeout firing; retry against the slow relay.
+  if (error.name === "AbortError" || error.name === "TimeoutError") return true;
+  // Socket-level failures from undici (relay closed the connection, reset, etc.)
+  const cause = (error as { cause?: { code?: string } }).cause;
+  const code = cause?.code;
+  if (
+    code === "UND_ERR_SOCKET" ||
+    code === "ECONNRESET" ||
+    code === "ECONNREFUSED" ||
+    code === "ETIMEDOUT" ||
+    code === "EPIPE" ||
+    code === "ENOTFOUND"
+  ) {
+    return true;
+  }
+  return error.message.includes("fetch failed");
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchImageWithRetry(url: string, init: RequestInit) {
+  const maxRetries = getImageMaxRetries();
+  const timeoutMs = getImageTimeoutMs();
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, {
+        ...init,
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+
+      // Retry transient server-side / rate-limit responses.
+      if (
+        (response.status >= 500 || response.status === 408 || response.status === 429) &&
+        attempt < maxRetries
+      ) {
+        lastError = new Error(`GPT Image 2 API error: ${response.status}`);
+        await sleep(Math.min(2_000 * 2 ** attempt, 15_000));
+        continue;
+      }
+
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxRetries && isRetryableError(error)) {
+        // Exponential backoff: 2s, 4s, 8s ... capped at 15s.
+        await sleep(Math.min(2_000 * 2 ** attempt, 15_000));
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("GPT Image 2 request failed");
+}
+
 async function getErrorMessage(response: Response) {
   const errorText = await response.text();
   if (!errorText) return "";
@@ -74,7 +156,9 @@ async function persistGeneratedImageUrlToR2(
   userId: string,
   filePrefix: string,
 ) {
-  const imageResponse = await fetch(imageUrl);
+  const imageResponse = await fetch(imageUrl, {
+    signal: AbortSignal.timeout(getImageTimeoutMs()),
+  });
   if (!imageResponse.ok) {
     throw new Error("Failed to download generated image");
   }
@@ -136,19 +220,22 @@ async function generateGptImage2(
     };
   }
 
-  const response = await fetch(resolveImagesGenerationUrl(baseUrlConfig.value), {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKeyConfig.value}`,
-      "Content-Type": "application/json",
+  const response = await fetchImageWithRetry(
+    resolveImagesGenerationUrl(baseUrlConfig.value),
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKeyConfig.value}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: env.GPT_IMAGE2_MODEL ?? "gpt-image2",
+        prompt,
+        n: 1,
+        size: "1024x1024",
+      }),
     },
-    body: JSON.stringify({
-      model: env.GPT_IMAGE2_MODEL ?? "gpt-image2",
-      prompt,
-      n: 1,
-      size: "1024x1024",
-    }),
-  });
+  );
 
   if (!response.ok) {
     const errorMessage = await getErrorMessage(response);

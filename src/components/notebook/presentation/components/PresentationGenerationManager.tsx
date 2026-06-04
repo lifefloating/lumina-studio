@@ -61,6 +61,14 @@ interface PresentationOutlineMessageMetadata {
 
 const generationLogger = createLogger("client:presentation-generation");
 
+// Max number of slide images generated at the same time. Relay/proxied image
+// endpoints are slow and drop idle sockets when overloaded, so we throttle how
+// many requests are in flight. Override via NEXT_PUBLIC_GPT_IMAGE2_CONCURRENCY.
+const MAX_CONCURRENT_IMAGE_GENERATIONS = (() => {
+  const parsed = Number(process.env.NEXT_PUBLIC_GPT_IMAGE2_CONCURRENCY);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 3;
+})();
+
 function stripXmlCodeBlock(input: string): string {
   let result = input.trim();
   if (result.startsWith("```xml")) {
@@ -760,8 +768,22 @@ export function PresentationGenerationManager() {
 
   // Listen for manual root image generation changes (when user manually triggers image generation)
   useEffect(() => {
-    for (const [slideId, gen] of Object.entries(rootImageGeneration)) {
+    // Relay image endpoints are slow and drop idle sockets when too many
+    // requests are in flight at once. Cap how many images generate concurrently
+    // so we don't overwhelm the relay (which caused most slides to fail before).
+    const entries = Object.entries(rootImageGeneration);
+    let inFlight = entries.filter(
+      ([, gen]) => gen.status === "generating",
+    ).length;
+
+    for (const [slideId, gen] of entries) {
       if (gen.status === "queued") {
+        if (inFlight >= MAX_CONCURRENT_IMAGE_GENERATIONS) {
+          // Leave it queued; this effect re-runs when an in-flight image
+          // settles (its status changes), freeing a slot for the next one.
+          continue;
+        }
+        inFlight++;
         // Next, set status to "pending"
         usePresentationState.getState().rootImageGeneration &&
           usePresentationState.setState((state) => ({

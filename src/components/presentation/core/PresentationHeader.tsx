@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { updatePresentationTitle } from "@/app/_actions/notebook/presentation/presentationActions";
 import LuminaLogo from "@/components/globals/lumina-logo";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
+import { ExportButton } from "@/components/presentation/buttons/ExportButton";
 import { PresentButton } from "@/components/presentation/buttons/PresentButton";
 import { ShareButton } from "@/components/presentation/buttons/ShareButton";
 import { PresentationMenu } from "@/components/presentation/controls/PresentationMenu";
@@ -64,7 +65,7 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
         <div className="flex min-w-0 items-center gap-2">
           {/* This component is suppose to be logo but for now its is actually hamburger menu */}
 
-          <Link href="/presentations">
+          <Link href="/presentation">
             <Button size={"icon"} className="rounded-full" variant={"ghost"}>
               <Brain></Brain>
             </Button>
@@ -93,7 +94,7 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
       {/* Left section with breadcrumb navigation */}
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <Link
-          href="/presentations"
+          href="/presentation"
           className="text-muted-foreground hover:text-foreground"
         >
           <Brain className="h-5 w-5"></Brain>
@@ -147,6 +148,7 @@ export default function PresentationHeader({ title }: PresentationHeaderProps) {
         )}
 
         {/* Export button - Only in presentation page, not outline or present mode */}
+        {isPresentationPage && !isPresenting && !isReadOnly && <ExportButton />}
         {/* Share button - Only in presentation page, not outline */}
         {isPresentationPage && !isPresenting && !isReadOnly && <ShareButton />}
 

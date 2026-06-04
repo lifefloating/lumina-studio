@@ -11,10 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   type AppLocale,
+  DEFAULT_LOCALE,
   normalizeLocale,
   SUPPORTED_LOCALES,
 } from "@/lib/i18n/resources";
 import { Languages } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const LANGUAGE_LABEL_KEYS: Record<AppLocale, string> = {
@@ -29,7 +31,23 @@ const LANGUAGE_SHORT_LABELS: Record<AppLocale, string> = {
 
 export function LanguageSwitcher() {
   const { i18n, t } = useTranslation();
-  const currentLocale = normalizeLocale(i18n.resolvedLanguage ?? i18n.language);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Until mounted, render the default locale so the server-rendered markup and
+  // the client's first paint match. The provider may switch the language inside
+  // an effect (from a cookie or navigator.language), which would otherwise cause
+  // a hydration mismatch on locale-dependent text/attributes.
+  const currentLocale: AppLocale = mounted
+    ? normalizeLocale(i18n.resolvedLanguage ?? i18n.language)
+    : DEFAULT_LOCALE;
+
+  // Resolve translations against the same locale used for `currentLocale` so the
+  // first paint is internally consistent and matches the server.
+  const tt = mounted ? t : i18n.getFixedT(DEFAULT_LOCALE);
 
   return (
     <DropdownMenu>
@@ -39,8 +57,8 @@ export function LanguageSwitcher() {
           variant="ghost"
           size="sm"
           className="h-9 gap-1.5 px-2"
-          aria-label={t("languageSwitcher.ariaLabel")}
-          title={t("languageSwitcher.label")}
+          aria-label={tt("languageSwitcher.ariaLabel")}
+          title={tt("languageSwitcher.label")}
         >
           <Languages className="h-4 w-4" />
           <span className="text-xs font-semibold">
@@ -49,7 +67,7 @@ export function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
-        <DropdownMenuLabel>{t("languageSwitcher.label")}</DropdownMenuLabel>
+        <DropdownMenuLabel>{tt("languageSwitcher.label")}</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={currentLocale}
           onValueChange={(locale) => {
@@ -58,7 +76,7 @@ export function LanguageSwitcher() {
         >
           {SUPPORTED_LOCALES.map((locale) => (
             <DropdownMenuRadioItem key={locale} value={locale}>
-              {t(LANGUAGE_LABEL_KEYS[locale])}
+              {tt(LANGUAGE_LABEL_KEYS[locale])}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
