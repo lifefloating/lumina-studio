@@ -115,7 +115,9 @@ export const PresentationImageElement = withHOC(
             };
           }
         } else {
-          result = await generateImageAction(prompt, imageModel);
+          result = await generateImageAction(prompt, imageModel, {
+            source: "presentation",
+          });
         }
 
         if (

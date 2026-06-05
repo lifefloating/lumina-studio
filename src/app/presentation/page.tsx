@@ -1,7 +1,7 @@
 "use client";
 
-import { PresentationDashboard } from "@/components/notebook/presentation/components/PresentationDashboard";
+import { DashboardTabs } from "@/components/notebook/DashboardTabs";
 
 export default function PresentationPage() {
-  return <PresentationDashboard />;
+  return <DashboardTabs />;
 }

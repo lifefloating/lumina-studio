@@ -34,7 +34,9 @@ export async function generateSlideImageAction(
       };
     }
 
-    return await generateImageAction(prompt, DEFAULT_SLIDE_IMAGE_MODEL);
+    return await generateImageAction(prompt, DEFAULT_SLIDE_IMAGE_MODEL, {
+      source: "presentation",
+    });
   } catch (error) {
     console.error("Error generating slide image:", error);
     return {

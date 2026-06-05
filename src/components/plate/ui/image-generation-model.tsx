@@ -57,7 +57,9 @@ export function GenerateImageDialogContent({
     setIsGenerating(true);
 
     try {
-      const result = await generateImageAction(prompt, selectedModel);
+      const result = await generateImageAction(prompt, selectedModel, {
+        source: "presentation",
+      });
 
       if (!result.success) {
         throw new Error(result.error ?? "Failed to generate image");

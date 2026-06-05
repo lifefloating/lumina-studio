@@ -128,7 +128,7 @@ export function PresentationDashboard() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:px-6">
+    <div className="flex w-full flex-col gap-8">
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.75fr)]">
         <Card className="overflow-hidden border-border/60 bg-background shadow-xs">
           <CardHeader className="border-b border-border/60 px-5 py-4 sm:px-6">

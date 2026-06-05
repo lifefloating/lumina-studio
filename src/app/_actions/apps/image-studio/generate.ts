@@ -4,6 +4,12 @@ import {
   generateImageAction as generateTogetherImageAction,
   type ImageModelList as TogetherImageModelList,
 } from "@/app/_actions/image/generate";
+import {
+  MAX_REFERENCE_IMAGES,
+  type GenerateImageOptions,
+  type ImageSource,
+  type ReferenceImage,
+} from "@/app/_actions/apps/image-studio/shared";
 import { env } from "@/env";
 import { requireOptionalIntegration } from "@/lib/env/optional-integrations";
 import { auth } from "@/server/auth";
@@ -26,6 +32,13 @@ function resolveImagesGenerationUrl(baseUrl: string) {
   return trimmedBaseUrl.endsWith("/v1")
     ? `${trimmedBaseUrl}/images/generations`
     : `${trimmedBaseUrl}/v1/images/generations`;
+}
+
+function resolveImagesEditUrl(baseUrl: string) {
+  const trimmedBaseUrl = baseUrl.replace(/\/+$/, "");
+  return trimmedBaseUrl.endsWith("/v1")
+    ? `${trimmedBaseUrl}/images/edits`
+    : `${trimmedBaseUrl}/v1/images/edits`;
 }
 
 // Relay / proxied image endpoints are slow (single requests observed at
@@ -131,6 +144,7 @@ async function persistGeneratedImageToR2(
   userId: string,
   filePrefix: string,
   contentType = "image/png",
+  source: ImageSource = "image_studio",
 ) {
   const extension = contentType.split("/")[1]?.split(";")[0] ?? "png";
   const filename = `${filePrefix}_${Date.now()}.${extension}`;
@@ -146,6 +160,7 @@ async function persistGeneratedImageToR2(
       url,
       prompt,
       userId,
+      source,
     },
   });
 }
@@ -155,6 +170,7 @@ async function persistGeneratedImageUrlToR2(
   prompt: string,
   userId: string,
   filePrefix: string,
+  source: ImageSource = "image_studio",
 ) {
   const imageResponse = await fetch(imageUrl, {
     signal: AbortSignal.timeout(getImageTimeoutMs()),
@@ -172,6 +188,7 @@ async function persistGeneratedImageUrlToR2(
     userId,
     filePrefix,
     imageBlob.type || "image/png",
+    source,
   );
 }
 
@@ -180,6 +197,7 @@ async function persistGeneratedBase64ImageToR2(
   prompt: string,
   userId: string,
   filePrefix: string,
+  source: ImageSource = "image_studio",
 ) {
   return persistGeneratedImageToR2(
     Buffer.from(b64Json, "base64"),
@@ -187,12 +205,84 @@ async function persistGeneratedBase64ImageToR2(
     userId,
     filePrefix,
     "image/png",
+    source,
   );
+}
+
+function buildGenerateRequest(
+  apiKey: string,
+  baseUrl: string,
+  prompt: string,
+  options: GenerateImageOptions,
+): { url: string; init: RequestInit } {
+  return {
+    url: resolveImagesGenerationUrl(baseUrl),
+    init: {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: env.GPT_IMAGE2_MODEL ?? "gpt-image2",
+        prompt,
+        n: 1,
+        size: options.size ?? "1024x1024",
+        ...(options.quality ? { quality: options.quality } : {}),
+        ...(options.outputFormat
+          ? { output_format: options.outputFormat }
+          : {}),
+      }),
+    },
+  };
+}
+
+function buildEditRequest(
+  apiKey: string,
+  baseUrl: string,
+  prompt: string,
+  options: GenerateImageOptions,
+  referenceImages: ReferenceImage[],
+): { url: string; init: RequestInit } {
+  // multipart/form-data: the edit endpoint requires binary image uploads, so we
+  // attach each reference image under the repeated `image[]` field. We let fetch
+  // set the multipart boundary by NOT setting Content-Type ourselves.
+  const formData = new FormData();
+  formData.append("model", env.GPT_IMAGE2_MODEL ?? "gpt-image2");
+  formData.append("prompt", prompt);
+  formData.append("n", "1");
+  formData.append("size", options.size ?? "1024x1024");
+  if (options.quality) {
+    formData.append("quality", options.quality);
+  }
+  if (options.outputFormat) {
+    formData.append("output_format", options.outputFormat);
+  }
+
+  for (const reference of referenceImages) {
+    const bytes = Buffer.from(reference.data, "base64");
+    const blob = new Blob([bytes], {
+      type: reference.contentType || "image/png",
+    });
+    formData.append("image[]", blob, reference.name || "reference.png");
+  }
+
+  return {
+    url: resolveImagesEditUrl(baseUrl),
+    init: {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: formData,
+    },
+  };
 }
 
 async function generateGptImage2(
   prompt: string,
   userId: string,
+  options: GenerateImageOptions = {},
 ) {
   const apiKeyConfig = requireOptionalIntegration({
     integration: "GPT Image 2",
@@ -220,22 +310,29 @@ async function generateGptImage2(
     };
   }
 
-  const response = await fetchImageWithRetry(
-    resolveImagesGenerationUrl(baseUrlConfig.value),
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKeyConfig.value}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: env.GPT_IMAGE2_MODEL ?? "gpt-image2",
-        prompt,
-        n: 1,
-        size: "1024x1024",
-      }),
-    },
+  const source = options.source ?? "image_studio";
+  const referenceImages = (options.referenceImages ?? []).slice(
+    0,
+    MAX_REFERENCE_IMAGES,
   );
+  const isEdit = referenceImages.length > 0;
+
+  const { url, init } = isEdit
+    ? buildEditRequest(
+        apiKeyConfig.value,
+        baseUrlConfig.value,
+        prompt,
+        options,
+        referenceImages,
+      )
+    : buildGenerateRequest(
+        apiKeyConfig.value,
+        baseUrlConfig.value,
+        prompt,
+        options,
+      );
+
+  const response = await fetchImageWithRetry(url, init);
 
   if (!response.ok) {
     const errorMessage = await getErrorMessage(response);
@@ -253,6 +350,7 @@ async function generateGptImage2(
       prompt,
       userId,
       "image",
+      source,
     );
 
     return {
@@ -267,6 +365,7 @@ async function generateGptImage2(
       prompt,
       userId,
       "image",
+      source,
     );
 
     return {
@@ -281,6 +380,7 @@ async function generateGptImage2(
 export async function generateImageAction(
   prompt: string,
   model: ImageModelList = "gpt-image2",
+  options: GenerateImageOptions = {},
 ) {
   const session = await auth();
 
@@ -293,7 +393,7 @@ export async function generateImageAction(
 
   try {
     if (model === "gpt-image2") {
-      return await generateGptImage2(prompt, session.user.id);
+      return await generateGptImage2(prompt, session.user.id, options);
     }
 
     return await generateTogetherImageAction(

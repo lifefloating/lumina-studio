@@ -177,5 +177,8 @@ model GeneratedImage {
   updatedAt DateTime @updatedAt
   userId    String
   prompt    String
+  source    String   @default("image_studio")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, source, createdAt])
 }

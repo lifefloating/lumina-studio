@@ -850,6 +850,7 @@ export function PresentationGenerationManager() {
                   result = await generateImageAction(
                     slide.rootImage!.query,
                     imageModel,
+                    { source: "presentation" },
                   );
                 }
               }
